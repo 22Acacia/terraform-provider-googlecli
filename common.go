@@ -1,13 +1,13 @@
-package terraform-gcloud
+package terraformGcloud
 
 import (
 	"os"
+	"log"
 	"bytes"
-	"errors"
-	"regexp"
 	"strings"
 	"os/exec"
 	"io/ioutil"
+	"encoding/json"
 )
 
 // accountFile represents the structure of the account file JSON file.
@@ -56,7 +56,7 @@ func cleanupTempAccountFile(rawAccountFile, account_file string) {
 
 //  init function will make sure that gcloud cli is installed,
 //  authorized and that dataflow commands are available
-func InitGcloud(config *Config) error {
+func InitGcloud(accountFileRaw string) error {
 	//  check that gcloud is installed
 	_, err := exec.LookPath("gcloud")
 	if err != nil {
@@ -65,8 +65,8 @@ func InitGcloud(config *Config) error {
 	}
 
 	//  ensure that the found gcloud is authorized
-	account_file, err := setAccountFile(config.AccountFile)
-	defer cleanupTempAccountFile(config.AccountFile, account_file)
+	account_file, err := setAccountFile(accountFileRaw)
+	defer cleanupTempAccountFile(accountFileRaw, account_file)
 	if err != nil {
 		return err
 	}
