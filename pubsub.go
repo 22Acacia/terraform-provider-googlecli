@@ -18,23 +18,18 @@ func CreatePubsub(d *schema.ResourceData) (string, error) {
 		return "", fmt.Errorf("Error creating pubsub: %q", stderr.String())
 	}
 
-	var pubsubRet []string
+	var pubsubRet [][]interface{}
 	err = parseJSON(&pubsubRet, stdout.String())
 	if err != nil {
 		return "", fmt.Errorf("Failed to deserialize %q with error: %q", stdout.String(), err)
 	}
 
-	if len(pubsubRet) > 0 {
+	if len(pubsubRet[1]) > 0 {
 		return "", fmt.Errorf("Error creating pubsub: %q", pubsubRet[1])
 	} 
 	
-	var success []map[string]string
-	err = parseJSON(&success, pubsubRet[0])
-	if err != nil {
-		return "", fmt.Errorf("Failed to deserialize success list %q with error %q:", pubsubRet[0], err)
-	}
-
-	return success[0]["name"], nil
+	success := pubsubRet[0][0].(map[string]interface{})
+	return success["name"].(string), nil
 }
 
 func ReadPubsub(d *schema.ResourceData) (bool, int, error) {
@@ -100,15 +95,15 @@ func DeletePubsub(d *schema.ResourceData) (error) {
 		return fmt.Errorf("Failed to delete pubsub topic: %q", stderr.String())
 	}
 
-	var pubsubRet interface{}
+	var pubsubRet [][]interface{}
 	err = parseJSON(&pubsubRet, stdout.String())
 	if err != nil {
 		return err
 	}
 
-//	if len(pubsubRet) > 0 {
-//		return fmt.Errorf("Error deleting pubsub: %q", pubsubRet)
-//	}
+	if len(pubsubRet[1]) > 0 {
+		return fmt.Errorf("Error deleting pubsub: %q", pubsubRet)
+	}
 
 	return nil
 }
