@@ -57,7 +57,9 @@ func ReadPubsub(d *schema.ResourceData) (bool, int, error) {
 
 	subcnt := 0
 	if found == true {
-		read_pubsub_cmd := exec.Command("gcloud", "alpha", "pubsub", "subscriptions", "list", "--format", "json")
+		read_pubsub_cmd := exec.Command("gcloud", "alpha", "pubsub", "topics", "list-subscriptions", pName, "--format", "json")
+		stdout.Reset()
+		stderr.Reset()
 		read_pubsub_cmd.Stdout = &stdout
 		read_pubsub_cmd.Stderr = &stderr
 		err := read_pubsub_cmd.Run()
@@ -65,17 +67,13 @@ func ReadPubsub(d *schema.ResourceData) (bool, int, error) {
 			return false, 0, fmt.Errorf("Error listing pubsub subscriptions: %q", stderr.String())
 		}
 		
-		var subscriptionList []map[string]string
+		var subscriptionList []string
 		err = parseJSON(&subscriptionList, stdout.String())
 		if err != nil {
-			return found, 0, err
+			return found, 0, fmt.Errorf("failed string: %q with error: %q", stdout.String(), err)
 		}
 
-		for _, doc := range subscriptionList {
-			if strings.Contains(doc["topic"], pName) {
-				subcnt++
-			}
-		}
+		subcnt = len(subscriptionList)
 	}
 
 	return found, subcnt, nil
