@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"strings"
 	"os/exec"
-	"github.com/hashicorp/terraform/helper/schema"
 )
 
 type dataflowDescription struct {
@@ -21,11 +20,11 @@ type dataflowDescription struct {
 }
 
 
-func CreateDataflow(d *schema.ResourceData) ([]string, error) {
+func CreateDataflow(name, jarfile, class, project, staging_bucket string) ([]string, error) {
 	//  at this point we have verified that our command line jankiness is going to work
 	//  get to it
 	//  I'm assuming, possibly foolishly, that java is installed on this system
-	create_dataflow_cmd := exec.Command("java", "-cp", d.Get("jarfile").(string), d.Get("class").(string), "--project="+d.Get("project").(string), "--stagingLocation="+d.Get("staging_bucket").(string), "--jobName="+d.Get("name").(string))
+	create_dataflow_cmd := exec.Command("java", "-cp", jarfile, class, "--project="+project, "--stagingLocation=gs://"+staging_bucket, "--jobName="+name)
 	var stdout, stderr bytes.Buffer
 	create_dataflow_cmd.Stdout = &stdout
 	create_dataflow_cmd.Stderr = &stderr
@@ -45,50 +44,41 @@ func CreateDataflow(d *schema.ResourceData) ([]string, error) {
 	return jobids, nil
 }
 
-func ReadDataflow(d *schema.ResourceData) ([]string, error) {
-	job_states := make([]string, 0)
-	for i := 0; i < d.Get("jobids.#").(int); i++ {
-		key := fmt.Sprintf("jobids.%d", i)
-		job_check_cmd := exec.Command("gcloud", "alpha", "dataflow", "jobs", "describe", d.Get(key).(string), "--format", "json")
-		var stdout, stderr bytes.Buffer
-		job_check_cmd.Stdout = &stdout
-		job_check_cmd.Stderr = &stderr
-		err := job_check_cmd.Run()
-		if err != nil {
-			return nil, err
-		}
-
-		var jobDesc dataflowDescription
-		fmt.Println(stdout.String())
-		err = parseJSON(&jobDesc, stdout.String())
-		if err != nil {
-			return nil, err
-		}
-		job_states = append(job_states, jobDesc.CurrentState)
+func ReadDataflow(jobkey string) (string, error) {
+	job_check_cmd := exec.Command("gcloud", "alpha", "dataflow", "jobs", "describe", jobkey, "--format", "json")
+	var stdout, stderr bytes.Buffer
+	job_check_cmd.Stdout = &stdout
+	job_check_cmd.Stderr = &stderr
+	err := job_check_cmd.Run()
+	if err != nil {
+		return "", err
 	}
 
-	return job_states, nil
+	var jobDesc dataflowDescription
+	fmt.Println(stdout.String())
+	err = parseJSON(&jobDesc, stdout.String())
+	if err != nil {
+		return "", err
+	}
+	job_state := jobDesc.CurrentState
+
+	return job_state, nil
 }
 
-func CancelDataflow(d *schema.ResourceData) ([]string, error) {
-	failedCancel := make([]string, 0)
-	for i := 0; i < d.Get("jobids.#").(int); i++ {
-		jobstatekey := fmt.Sprintf("job_states.%d", i)
-		jobstate := d.Get(jobstatekey).(string)
-		if jobstate == "JOB_STATE_RUNNING" {
-			jobidkey := fmt.Sprintf("jobids.%d", i)
-			job_cancel_cmd := exec.Command("gcloud", "alpha", "dataflow", "jobs", "cancel", d.Get(jobidkey).(string))
-			var stdout, stderr bytes.Buffer
-			job_cancel_cmd.Stdout = &stdout
-			job_cancel_cmd.Stderr = &stderr
-			err := job_cancel_cmd.Run()
-			if err != nil {
-				return nil, err
-			}
+func CancelDataflow(jobid, jobstate string) (bool, error) {
+	failedCancel := false
+	if jobstate == "JOB_STATE_RUNNING" {
+		job_cancel_cmd := exec.Command("gcloud", "alpha", "dataflow", "jobs", "cancel", jobid)
+		var stdout, stderr bytes.Buffer
+		job_cancel_cmd.Stdout = &stdout
+		job_cancel_cmd.Stderr = &stderr
+		err := job_cancel_cmd.Run()
+		if err != nil {
+			return false, err
+		}
 
-			if strings.Contains(stdout.String(), "Failed") {
-				failedCancel = append(failedCancel,d.Get(jobidkey).(string))
-			}
+		if strings.Contains(stdout.String(), "Failed") {
+			failedCancel = true
 		}
 	}
 

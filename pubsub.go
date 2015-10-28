@@ -5,11 +5,10 @@ import (
 	"bytes"
 	"strings"
 	"os/exec"
-	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func CreatePubsub(d *schema.ResourceData) (string, error) {
-	create_pubsub_cmd := exec.Command("gcloud", "alpha", "pubsub", "topics", "create", d.Get("name").(string), "--format", "json")
+func CreatePubsub(pubsubName string) (string, error) {
+	create_pubsub_cmd := exec.Command("gcloud", "alpha", "pubsub", "topics", "create", pubsubName, "--format", "json")
 	var stdout, stderr bytes.Buffer
 	create_pubsub_cmd.Stdout = &stdout
 	create_pubsub_cmd.Stderr = &stderr
@@ -32,31 +31,32 @@ func CreatePubsub(d *schema.ResourceData) (string, error) {
 	return success["name"].(string), nil
 }
 
-func ReadPubsub(d *schema.ResourceData) (bool, int, error) {
+func ReadPubsub(pubsubName string) (string, int, error) {
 	read_pubsub_cmd := exec.Command("gcloud", "alpha", "pubsub", "topics", "list", "--format", "json")
 	var stdout, stderr bytes.Buffer
 	read_pubsub_cmd.Stdout = &stdout
 	read_pubsub_cmd.Stderr = &stderr
 	err := read_pubsub_cmd.Run()
 	if err != nil {
-		return false, 0, fmt.Errorf("Error listing pubsub topics: %q", stderr.String())
+		return "", 0, fmt.Errorf("Error listing pubsub topics: %q", stderr.String())
 	}
 
 	var pubsubList []map[string]string
 	err = parseJSON(&pubsubList, stdout.String())
 	if err != nil {
-		return false, 0, err
+		return "", 0, err
 	}
-
-	pName, found := d.Get("name").(string), false
-	for i := 0; i < len(pubsubList) && !found; i++ {
+	
+	pubsubArr := strings.Split(pubsubName, "/")
+	pName, fullname := pubsubArr[len(pubsubArr)-1], ""
+	for i := 0; i < len(pubsubList) && fullname == ""; i++ {
 		if strings.Contains(pubsubList[i]["name"], pName) {
-			found = true
+			fullname = pubsubList[i]["name"]
 		}
 	}
 
 	subcnt := 0
-	if found == true {
+	if fullname != "" {
 		read_pubsub_cmd := exec.Command("gcloud", "alpha", "pubsub", "topics", "list-subscriptions", pName, "--format", "json")
 		stdout.Reset()
 		stderr.Reset()
@@ -64,27 +64,27 @@ func ReadPubsub(d *schema.ResourceData) (bool, int, error) {
 		read_pubsub_cmd.Stderr = &stderr
 		err := read_pubsub_cmd.Run()
 		if err != nil {
-			return false, 0, fmt.Errorf("Error listing pubsub subscriptions: %q", stderr.String())
+			return fullname, 0, fmt.Errorf("Error listing pubsub subscriptions: %q", stderr.String())
 		}
 		
 		var subscriptionList []string
 		err = parseJSON(&subscriptionList, stdout.String())
 		if err != nil {
-			return found, 0, fmt.Errorf("failed string: %q with error: %q", stdout.String(), err)
+			return fullname, 0, fmt.Errorf("failed string: %q with error: %q", stdout.String(), err)
 		}
 
 		subcnt = len(subscriptionList)
 	}
 
-	return found, subcnt, nil
+	return fullname, subcnt, nil
 }
 
-func DeletePubsub(d *schema.ResourceData) (error) {
-	if d.Get("subscription_count").(int) > 1 {
+func DeletePubsub(pubsubName string, subCount int) (error) {
+	if subCount > 0 {
 		return fmt.Errorf("Topic has active subscriptions, will not delete")
 	}
 
-	delete_pubsub_cmd := exec.Command("gcloud", "alpha", "pubsub", "topics", "delete", d.Get("name").(string), "--format", "json")
+	delete_pubsub_cmd := exec.Command("gcloud", "alpha", "pubsub", "topics", "delete", pubsubName, "--format", "json")
 	var stdout, stderr bytes.Buffer
 	delete_pubsub_cmd.Stdout = &stdout
 	delete_pubsub_cmd.Stderr = &stderr

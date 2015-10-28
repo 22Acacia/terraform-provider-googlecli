@@ -5,11 +5,10 @@ import (
 	"bytes"
 	"strings"
 	"os/exec"
-	"github.com/hashicorp/terraform/helper/schema"
 )
 
-func CreateSubscription(d *schema.ResourceData) (string, error) {
-	create_subscription_cmd := exec.Command("gcloud", "alpha", "pubsub", "subscriptions", "create", d.Get("name").(string), "--topic", d.Get("topic").(string), "--format", "json")
+func CreateSubscription(name, topic string) (string, error) {
+	create_subscription_cmd := exec.Command("gcloud", "alpha", "pubsub", "subscriptions", "create", name, "--topic", topic, "--format", "json")
 	var stdout, stderr bytes.Buffer
 	create_subscription_cmd.Stdout = &stdout
 	create_subscription_cmd.Stderr = &stderr
@@ -39,34 +38,35 @@ type subscriptionElem struct {
 	Topic			string		`json:"topic"`
 }
 
-func ReadSubscription(d *schema.ResourceData) (bool, error) {
+func ReadSubscription(name string) (string, error) {
 	read_subscription_cmd := exec.Command("gcloud", "alpha", "pubsub", "subscriptions", "list", "--format", "json")
 	var stdout, stderr bytes.Buffer
 	read_subscription_cmd.Stdout = &stdout
 	read_subscription_cmd.Stderr = &stderr
 	err := read_subscription_cmd.Run()
 	if err != nil {
-		return false, fmt.Errorf("Error listing pubsub subscriptions: %q", stderr.String())
+		return "", fmt.Errorf("Error listing pubsub subscriptions: %q", stderr.String())
 	}
 
 	var subscriptionList []subscriptionElem
 	err = parseJSON(&subscriptionList, stdout.String())
 	if err != nil {
-		return false, err
+		return "", err
 	}
 
-	sName, found := d.Get("name").(string), false
-	for i := 0; i < len(subscriptionList) && !found; i++ {
+	nameArr := strings.Split(name, "/")
+	sName, fullname := nameArr[len(nameArr)-1], ""
+	for i := 0; i < len(subscriptionList) && fullname == ""; i++ {
 		if strings.Contains(subscriptionList[i].Name, sName) {
-			found = true
+			fullname = subscriptionList[i].Name
 		}
 	}
 
-	return found, nil
+	return fullname, nil
 }
 
-func DeleteSubscription(d *schema.ResourceData) (error) {
-	delete_subscription_cmd := exec.Command("gcloud", "alpha", "pubsub", "subscriptionss", "delete", d.Get("name").(string), "--format", "json")
+func DeleteSubscription(name string) (error) {
+	delete_subscription_cmd := exec.Command("gcloud", "alpha", "pubsub", "subscriptions", "delete", name, "--format", "json")
 	var stdout, stderr bytes.Buffer
 	delete_subscription_cmd.Stdout = &stdout
 	delete_subscription_cmd.Stderr = &stderr
