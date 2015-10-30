@@ -80,10 +80,6 @@ func ReadPubsub(pubsubName string) (string, int, error) {
 }
 
 func DeletePubsub(pubsubName string, subCount int) (error) {
-	if subCount > 0 {
-		return fmt.Errorf("Topic has active subscriptions, will not delete")
-	}
-
 	delete_pubsub_cmd := exec.Command("gcloud", "alpha", "pubsub", "topics", "delete", pubsubName, "--format", "json")
 	var stdout, stderr bytes.Buffer
 	delete_pubsub_cmd.Stdout = &stdout

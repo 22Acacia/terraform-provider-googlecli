@@ -64,6 +64,13 @@ func InitGcloud(accountFileRaw string) error {
 		return err
 	}
 
+	//  check that java is installed
+	_, err = exec.LookPath("java")
+	if err != nil {
+		log.Println("java jre (at least) is not installed.  Please install and try again")
+		return err
+	}
+
 	//  ensure that the found gcloud is authorized
 	account_file, err := setAccountFile(accountFileRaw)
 	defer cleanupTempAccountFile(accountFileRaw, account_file)

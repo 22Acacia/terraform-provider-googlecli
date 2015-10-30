@@ -20,11 +20,16 @@ type dataflowDescription struct {
 }
 
 
-func CreateDataflow(name, jarfile, class, project, staging_bucket string) ([]string, error) {
+func CreateDataflow(name, jarfile, class, project string, optional_args map[string]string) ([]string, error) {
 	//  at this point we have verified that our command line jankiness is going to work
 	//  get to it
-	//  I'm assuming, possibly foolishly, that java is installed on this system
-	create_dataflow_cmd := exec.Command("java", "-cp", jarfile, class, "--project="+project, "--stagingLocation=gs://"+staging_bucket, "--jobName="+name)
+	dataflow_cmd := "java"
+	dataflow_args := []string{"-cp", jarfile, class, "--jobName=" + name, "--project=" + project}
+	for k, v := range optional_args {
+		dataflow_args = append(dataflow_args, "--" + k + "=" + v)
+	}
+
+	create_dataflow_cmd := exec.Command(dataflow_cmd, dataflow_args...)
 	var stdout, stderr bytes.Buffer
 	create_dataflow_cmd.Stdout = &stdout
 	create_dataflow_cmd.Stderr = &stderr
@@ -34,9 +39,10 @@ func CreateDataflow(name, jarfile, class, project, staging_bucket string) ([]str
 	}
 
 	//  job successfully submitted, now get the job id
-	jobidRe := regexp.MustCompile("Submitted job: ([0-9-_]+)\n")
+	jobidRe := regexp.MustCompile("Submitted job: ([0-9-_]+).*")
 	jobidmatches := jobidRe.FindAllStringSubmatch(stdout.String(), -1)
 	jobids := make([]string, 0)
+	fmt.Println(stdout.String())
 	for _, match := range jobidmatches {
 		jobids = append(jobids, match[1])
 	}
@@ -51,7 +57,7 @@ func ReadDataflow(jobkey string) (string, error) {
 	job_check_cmd.Stderr = &stderr
 	err := job_check_cmd.Run()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("Error reading job %q with error %q", jobkey, stderr.String())
 	}
 
 	var jobDesc dataflowDescription
