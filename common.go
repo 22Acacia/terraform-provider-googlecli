@@ -26,6 +26,7 @@ func parseJSON(result interface{}, contents string) error {
 }
 
 //  return pointer to a file that contains account information
+//   this was swiped directly from terraform, its works.  its fine
 func setAccountFile(contents string) (string, error) {
 	if contents != "" {
 		var account accountFile
@@ -99,3 +100,34 @@ func InitGcloud(accountFileRaw string) error {
 	return nil
 }
 
+//  kubectl is only used when working with pods in a container so we'll check it on its own
+func InitKubectl(container, zone string) error {
+	//  check that kubectl is installed
+	_, err := exec.LookPath("kubectl")
+	if err != nil {
+		log.Println("kubectl is not installed.  Please install and try again")
+		return err
+	}
+
+	cred_gen_cmd := exec.Command("gcloud", "beta",  "container", "clusters", "get-credentials", container, "--zone " + zone)
+	var stdout, stderr bytes.Buffer
+	cred_gen_cmd.Stdout = &stdout
+	cred_gen_cmd.Stderr = &stderr
+	err = cred_gen_cmd.Run()
+	if err != nil {
+		log.Println("Gcloud container credential fetch failed: %q", stdout.String())
+		return err 
+	}
+
+	
+	kubectl_check_cmd := exec.Command("kubectl", "config", "view")
+	kubectl_check_cmd.Stdout = &stdout
+	kubectl_check_cmd.Stderr = &stderr
+	err = kubectl_check_cmd.Run()
+	if err != nil {
+		log.Println("Kubectl config view command failed: %q", stdout.String())
+		return err 
+	}
+	
+	return nil
+}
