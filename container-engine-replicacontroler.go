@@ -19,7 +19,7 @@ type kubectlItem struct {
 }
 
 
-func CreateKubePod(name, dockerImage string, optional_args map[string]string) (string, error) {
+func CreateKubeRC(name, dockerImage string, optional_args map[string]string) (string, error) {
 	kubectl_cmd := "kubectl"
 	kubectl_run_args :=[]string{"run", name, "--image=" + dockerImage, "--output=json"}
 	for k, v := range optional_args {
@@ -44,7 +44,7 @@ func CreateKubePod(name, dockerImage string, optional_args map[string]string) (s
 }
 
 //  calling function needs to handle if the read is successful but the rc is dead or has no replicas
-func ReadKubePod(name string) (int, error) {
+func ReadKubeRC(name string) (int, error) {
 	get_replicacontrolers := exec.Command("kubectl", "get", "rc", name, "--output=json")
 	var stdout, stderr bytes.Buffer
 	get_replicacontrolers.Stdout = &stdout
@@ -63,7 +63,7 @@ func ReadKubePod(name string) (int, error) {
 	return getReturn.Status.Replicas, nil
 }
 
-func DeleteKubePod(name string) (error) {
+func DeleteKubeRc(name string) (error) {
 	delete_replicacontrolers := exec.Command("kubectl", "delete", "rc", name)
 	var stdout, stderr bytes.Buffer
 	delete_replicacontrolers.Stdout = &stdout
