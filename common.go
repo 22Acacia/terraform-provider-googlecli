@@ -2,7 +2,7 @@ package terraformGcloud
 
 import (
 	"os"
-	"log"
+	"fmt"
 	"bytes"
 	"strings"
 	"os/exec"
@@ -61,15 +61,13 @@ func InitGcloud(accountFileRaw string) error {
 	//  check that gcloud is installed
 	_, err := exec.LookPath("gcloud")
 	if err != nil {
-		log.Println("gcloud cli is not installed.  Please install and try again")
-		return err
+		return fmt.Errorf("gcloud cli is not installed.  Please install and try again\n")
 	}
 
 	//  check that java is installed
 	_, err = exec.LookPath("java")
 	if err != nil {
-		log.Println("java jre (at least) is not installed.  Please install and try again")
-		return err
+		return fmt.Errorf("java jre (at least) is not installed.  Please install and try again\n")
 	}
 
 	//  ensure that the found gcloud is authorized
@@ -84,8 +82,7 @@ func InitGcloud(accountFileRaw string) error {
 	auth_cmd.Stderr = &stderr
 	err = auth_cmd.Run()
 	if err != nil {
-		log.Println("Dataflow auth failed with error: %q", stdout.String())
-		return err 
+		return fmt.Errorf("Dataflow auth failed with error: %s\n", stderr.String())
 	}
 	
 	// verify that datacloud functions are installed
@@ -93,8 +90,7 @@ func InitGcloud(accountFileRaw string) error {
 	datacloud_cmd := exec.Command("gcloud", "alpha", "dataflow" , "-h")
 	err = datacloud_cmd.Run()
 	if err != nil {
-		log.Println("gcloud dataflow commands not installed.")
-		return err
+		return fmt.Errorf("gcloud dataflow commands not installed.\n")
 	}
 
 	return nil
@@ -105,18 +101,16 @@ func InitKubectl(container, zone string) error {
 	//  check that kubectl is installed
 	_, err := exec.LookPath("kubectl")
 	if err != nil {
-		log.Println("kubectl is not installed.  Please install and try again")
-		return err
+		return fmt.Errorf("kubectl is not installed.  Please install and try again\n")
 	}
 
-	cred_gen_cmd := exec.Command("gcloud", "beta",  "container", "clusters", "get-credentials", container, "--zone " + zone)
+	cred_gen_cmd := exec.Command("gcloud", "beta",  "container", "clusters", "get-credentials", container, "--zone=" + zone)
 	var stdout, stderr bytes.Buffer
 	cred_gen_cmd.Stdout = &stdout
 	cred_gen_cmd.Stderr = &stderr
 	err = cred_gen_cmd.Run()
 	if err != nil {
-		log.Println("Gcloud container credential fetch failed: %q", stdout.String())
-		return err 
+		return fmt.Errorf("Gcloud container credential fetch failed: %s\n", stderr.String())
 	}
 
 	
@@ -125,8 +119,7 @@ func InitKubectl(container, zone string) error {
 	kubectl_check_cmd.Stderr = &stderr
 	err = kubectl_check_cmd.Run()
 	if err != nil {
-		log.Println("Kubectl config view command failed: %q", stdout.String())
-		return err 
+		return fmt.Errorf("Kubectl config view command failed: %q\n", stderr.String())
 	}
 	
 	return nil
