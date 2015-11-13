@@ -57,6 +57,7 @@ func cleanupTempAccountFile(rawAccountFile, account_file string) {
 
 //  init function will make sure that gcloud cli is installed,
 //  authorized and that dataflow commands are available
+
 func InitGcloud(accountFileRaw string) error {
 	//  check that gcloud is installed
 	_, err := exec.LookPath("gcloud")
@@ -82,7 +83,7 @@ func InitGcloud(accountFileRaw string) error {
 	auth_cmd.Stderr = &stderr
 	err = auth_cmd.Run()
 	if err != nil {
-		return fmt.Errorf("Dataflow auth failed with error: %s\n", stderr.String())
+		return fmt.Errorf("gcloud auth failed with error: %s\n", stderr.String())
 	}
 	
 	// verify that datacloud functions are installed

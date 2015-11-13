@@ -38,16 +38,19 @@ func CreateDataflow(name, jarfile, class, project string, optional_args map[stri
 		return nil, fmt.Errorf("Error submitting dataflow job: %q", stderr.String())
 	}
 
+	return findJobIds(stdout.String()), nil
+}
+
+func findJobIds(creation_stdout string) ([]string) {
 	//  job successfully submitted, now get the job id
 	jobidRe := regexp.MustCompile("Submitted job: ([0-9-_]+).*")
-	jobidmatches := jobidRe.FindAllStringSubmatch(stdout.String(), -1)
+	jobidmatches := jobidRe.FindAllStringSubmatch(creation_stdout, -1)
 	jobids := make([]string, 0)
-	fmt.Println(stdout.String())
 	for _, match := range jobidmatches {
 		jobids = append(jobids, match[1])
 	}
 
-	return jobids, nil
+	return jobids
 }
 
 func ReadDataflow(jobkey string) (string, error) {
