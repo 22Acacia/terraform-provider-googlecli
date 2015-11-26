@@ -21,11 +21,11 @@ type dataflowDescription struct {
 }
 
 
-func CreateDataflow(name, jarfile, class, project string, optional_args map[string]string) ([]string, error) {
+func CreateDataflow(name, classpath, class, project string, optional_args map[string]string) ([]string, error) {
 	//  at this point we have verified that our command line jankiness is going to work
 	//  get to it
 	dataflow_cmd := "java"
-	dataflow_args := []string{"-cp", jarfile, class, "--jobName=" + name, "--project=" + project}
+	dataflow_args := []string{"-cp", classpath, class, "--jobName=" + name, "--project=" + project}
 	for k, v := range optional_args {
 		dataflow_args = append(dataflow_args, "--" + k + "=" + v)
 	}
