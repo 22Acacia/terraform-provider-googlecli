@@ -19,3 +19,8 @@ To use:
     googlecli = "terraform-provider-googlecli"
   }
 
+
+important notes for later:
+  when testing, terraform will yell about some missing env
+variables.  I will write up what to set for them and/or make
+a make file.  it'll be rad, you'll see
