@@ -1,4 +1,4 @@
-package terraformGcloud
+package main
 
 import (
 	"fmt"
@@ -56,9 +56,9 @@ func findJobIds(creation_stdout string) ([]string) {
 
 func ReadDataflow(jobkey string) (string, error) {
 	//  we will often read the job as we create it, but the state doesn't get set immediately so we
-	//  end up saving "" as the state.  which is bad times.  sleep three seconds to wait for status
+	//  end up saving "" as the state.  which is bad times.  sleep five seconds to wait for status
 	//  to be set
-	time.Sleep(3 * time.Second)
+	time.Sleep(5 * time.Second)
 	job_check_cmd := exec.Command("gcloud", "alpha", "dataflow", "jobs", "describe", jobkey, "--format", "json")
 	var stdout, stderr bytes.Buffer
 	job_check_cmd.Stdout = &stdout

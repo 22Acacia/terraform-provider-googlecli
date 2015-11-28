@@ -1,4 +1,4 @@
-package terraformGcloud
+package main
 
 import (
 	"fmt"
