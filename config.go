@@ -91,14 +91,14 @@ func (c *Config) initGcloud() error {
 }
 
 //  kubectl is only used when working with pods in a container so we'll check it on its own
-func (c *Config) initKubectl(container string) error {
+func (c *Config) initKubectl(container, zone string) error {
 	//  check that kubectl is installed
 	_, err := exec.LookPath("kubectl")
 	if err != nil {
 		return fmt.Errorf("kubectl is not installed.  Please install and try again\n")
 	}
 
-	cred_gen_cmd := exec.Command("gcloud", "beta",  "container", "clusters", "get-credentials", container, "--project=" + c.Project, "--zone=" + c.Region)
+	cred_gen_cmd := exec.Command("gcloud", "beta",  "container", "clusters", "get-credentials", container, "--project=" + c.Project, "--zone=" + zone)
 	var stdout, stderr bytes.Buffer
 	cred_gen_cmd.Stdout = &stdout
 	cred_gen_cmd.Stderr = &stderr

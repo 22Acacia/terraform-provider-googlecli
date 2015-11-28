@@ -67,7 +67,7 @@ func resourceContainerReplicaController() *schema.Resource {
 
 func resourceContainerReplicaControllerCreate(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
-	err := config.initKubectl(d.Get("container_name").(string))
+	err := config.initKubectl(d.Get("container_name").(string), d.Get("zone").(string))
 	if err != nil {
 		return err
 	}
@@ -86,7 +86,7 @@ func resourceContainerReplicaControllerCreate(d *schema.ResourceData, meta inter
 
 func resourceContainerReplicaControllerRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
-	err := config.initKubectl(d.Get("container_name").(string))
+	err := config.initKubectl(d.Get("container_name").(string), d.Get("zone").(string))
 	if err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ func resourceContainerReplicaControllerRead(d *schema.ResourceData, meta interfa
 
 func resourceContainerReplicaControllerDelete(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
-	err := config.initKubectl(d.Get("container_name").(string))
+	err := config.initKubectl(d.Get("container_name").(string), d.Get("zone").(string))
 	if err != nil {
 		return err
 	}

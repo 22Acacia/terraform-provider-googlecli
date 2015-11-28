@@ -72,7 +72,7 @@ func testAccResourceControllerExists(n string) resource.TestCheckFunc {
 var testAccResourceController = `
 resource "google_container_cluster" "foobar" {
     name = "foobar"
-    zone = "europe-west1-b"
+    zone = "us-central1-f"
     initial_node_count = 1
 
     master_auth {
