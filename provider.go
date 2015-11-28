@@ -61,3 +61,12 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 
 	return &config, nil
 }
+
+func cleanAdditionalArgs(optional_args map[string]interface{}) map[string]string {
+	cleaned_opts := make(map[string]string)
+	for k,v := range  optional_args {
+		cleaned_opts[k] = v.(string)
+	}
+	return cleaned_opts
+}
+

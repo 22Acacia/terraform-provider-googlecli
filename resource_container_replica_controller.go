@@ -49,6 +49,13 @@ func resourceContainerReplicaController() *schema.Resource {
 				Elem:	  schema.TypeString,
 			},
 
+			"env_args": &schema.Schema{
+				Type:     schema.TypeMap,
+				Optional: true,
+				ForceNew: true,
+				Elem:	  schema.TypeString,
+			},
+
 			"external_ip": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
@@ -58,14 +65,6 @@ func resourceContainerReplicaController() *schema.Resource {
 	}
 }
 
-func rcCleanOptionalArgs(optional_args map[string]interface{}) map[string]string {
-	cleaned_opts := make(map[string]string)
-	for k,v := range  optional_args {
-		cleaned_opts[k] = v.(string)
-	}
-	return cleaned_opts
-}
-
 func resourceContainerReplicaControllerCreate(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 	err := config.initKubectl(d.Get("container_name").(string))
@@ -73,8 +72,9 @@ func resourceContainerReplicaControllerCreate(d *schema.ResourceData, meta inter
 		return err
 	}
 
-	optional_args := rcCleanOptionalArgs(d.Get("optional_args").(map[string]interface{}))
-	uid, err := CreateKubeRC(d.Get("name").(string), d.Get("docker_image").(string), d.Get("external_port").(string), optional_args)
+	optional_args := cleanAdditionalArgs(d.Get("optional_args").(map[string]interface{}))
+	env_args := cleanAdditionalArgs(d.Get("env_args").(map[string]interface{}))
+	uid, err := CreateKubeRC(d.Get("name").(string), d.Get("docker_image").(string), d.Get("external_port").(string), optional_args, env_args)
 	if err != nil {
 		return err
 	}

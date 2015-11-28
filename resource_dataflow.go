@@ -56,18 +56,10 @@ func resourceDataflow() *schema.Resource {
 	}
 }
 
-func dataflowCleanOptionalArgs(optional_args map[string]interface{}) map[string]string {
-	cleaned_opts := make(map[string]string)
-	for k,v := range  optional_args {
-		cleaned_opts[k] = v.(string)
-	}
-	return cleaned_opts
-}
-
 func resourceDataflowCreate(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 
-	optional_args := dataflowCleanOptionalArgs(d.Get("optional_args").(map[string]interface{}))
+	optional_args := cleanAdditionalArgs(d.Get("optional_args").(map[string]interface{}))
 	jobids, err := CreateDataflow(d.Get("name").(string), d.Get("classpath").(string), d.Get("class").(string), config.Project, optional_args)
 	if err != nil {
 		return err

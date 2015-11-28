@@ -26,12 +26,21 @@ type kubectlService struct {
 	} 				`json:"status"`
 }
 
-func CreateKubeRC(name, dockerImage, external_port string, optional_args map[string]string) (string, error) {
+func addExtraArgs(run_args []string, optional_args, env_args map[string]string) ([]string) {
+	for k, v := range optional_args {
+		run_args = append(run_args, "--" + k + "=" +v)
+	}
+	for k, v := range env_args {
+		run_args = append(run_args, "--env=\"" + k + "=" + v + "\"")
+	}
+
+	return run_args
+}
+
+func CreateKubeRC(name, dockerImage, external_port string, optional_args, env_args map[string]string) (string, error) {
 	kubectl_cmd := "kubectl"
 	kubectl_run_args :=[]string{"run", name, "--image=" + dockerImage, "--output=json"}
-	for k, v := range optional_args {
-		kubectl_run_args = append(kubectl_run_args, "--" + k + "=" +v)
-	}
+	kubectl_run_args = addExtraArgs(kubectl_run_args, optional_args, env_args)
 	run_replicacontroler := exec.Command(kubectl_cmd, kubectl_run_args...)
 	var stdout, stderr bytes.Buffer
 	run_replicacontroler.Stdout = &stdout
