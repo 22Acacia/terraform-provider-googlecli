@@ -129,14 +129,33 @@ func fetchExternalIp(name string) (string, error) {
 	return ex_ip, nil
 }
 
-func DeleteKubeRC(name string) (error) {
+func DeleteKubeRC(name, external_port string) (error) {
+	if external_port != "" {
+		err := deleteLoadBalanacerService(name)
+		if err != nil {
+			return err
+		}
+	}
 	delete_replicacontrolers := exec.Command("kubectl", "delete", "rc", name)
 	var stdout, stderr bytes.Buffer
 	delete_replicacontrolers.Stdout = &stdout
 	delete_replicacontrolers.Stderr = &stderr
 	err := delete_replicacontrolers.Run()
 	if err != nil {
-		return  fmt.Errorf("Error listing replica controlers: %q", stderr.String())
+		return  fmt.Errorf("Error deleting replica controler: %q", stderr.String())
+	}
+	
+	return nil
+}
+
+func deleteLoadBalanacerService(name string) (error) {
+	delete_loadbalancer_service := exec.Command("kubectl", "delete", "svc", name)
+	var stdout, stderr bytes.Buffer
+	delete_loadbalancer_service.Stdout = &stdout
+	delete_loadbalancer_service.Stderr = &stderr
+	err := delete_loadbalancer_service.Run()
+	if err != nil {
+		return  fmt.Errorf("Error deleting service: %q", stderr.String())
 	}
 	
 	return nil
