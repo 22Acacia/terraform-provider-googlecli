@@ -115,7 +115,7 @@ func resourceContainerReplicaControllerDelete(d *schema.ResourceData, meta inter
 		return err
 	}
 
-	err = DeleteKubeRC(d.Get("name").(string),) 
+	err = DeleteKubeRC(d.Get("name").(string),d.Get("external_port").(string)) 
 	if err != nil {
 		return err
 	}
