@@ -19,11 +19,13 @@ type kubectlItem struct {
 }
 
 type kubectlService struct {
-	Status		struct{
-		Ingress	[]struct {
-			IP	string 	`json:"ip"`
-		} 			`json:"ingress"`
-	} 				`json:"status"`
+	Status		struct {
+		LoadBalancer	struct {
+			Ingress	[]struct {
+				IP	string 	`json:"ip"`
+			} 			`json:"ingress"`
+		}				`json:"loadBalancer"`
+	} 					`json:"status"`
 }
 
 func addExtraArgs(run_args []string, optional_args, env_args map[string]string) ([]string) {
@@ -31,7 +33,7 @@ func addExtraArgs(run_args []string, optional_args, env_args map[string]string) 
 		run_args = append(run_args, "--" + k + "=" +v)
 	}
 	for k, v := range env_args {
-		run_args = append(run_args, "--env=" + k + "=" + v)
+		run_args = append(run_args, "--env=\"" + k + "=" + v + "\"")
 	}
 
 	return run_args
@@ -66,7 +68,7 @@ func CreateKubeRC(name, dockerImage, external_port string, optional_args, env_ar
 }
 
 func expose_rc_externally(name, external_port string) (error) {
-	expose_rc := exec.Command("kubectl", "expose", "rc", name, "--port=" + external_port, "--create-external-load-balancer=true", "--output=json")
+	expose_rc := exec.Command("kubectl", "expose", "rc", name, "--port=" + external_port, "--type=LoadBalancer", "--output=json")
 	var stdout, stderr bytes.Buffer
 	expose_rc.Stdout = &stdout
 	expose_rc.Stderr = &stderr
@@ -120,8 +122,8 @@ func fetchExternalIp(name string) (string, error) {
 	}
 
 	var ex_ip string
-	if len(getReturn.Status.Ingress) != 0 {
-		ex_ip = getReturn.Status.Ingress[0].IP
+	if len(getReturn.Status.LoadBalancer.Ingress) != 0 {
+		ex_ip = getReturn.Status.LoadBalancer.Ingress[0].IP
 	}
 
 	return ex_ip, nil
