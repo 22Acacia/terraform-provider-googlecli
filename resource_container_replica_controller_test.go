@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -56,13 +57,25 @@ func testAccResourceControllerExists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("No ID is set")
 		}
 
-		count, _, err := ReadKubeRC(rs.Primary.Attributes["name"], "")
+		count, exip, err := ReadKubeRC(rs.Primary.Attributes["name"], "")
 		if err != nil {
 			return fmt.Errorf("Command line read has errored: %q with rs.Primary hash: %q", err, rs.Primary)
 		}
 
 		if count == 0 {
 			return fmt.Errorf("ResourceController pods never started")
+		}
+
+		for i := 0; i < 10 && exip == ""; i++ {
+			time.Sleep(time.Minute)
+			exip, err = fetchExternalIp(rs.Primary.Attributes["name"])
+			if err != nil {
+				return fmt.Errorf("Failed to fetch service info with error: %q", err)
+			}
+		}
+
+		if exip == "" {
+			return fmt.Errorf("Externalip never assigned to RC pod")
 		}
 
 		return nil
@@ -95,4 +108,5 @@ resource "googlecli_container_replica_controller" "foobar" {
 	docker_image = "nginx"
 	container_name = "${google_container_cluster.foobar.name}"
 	zone = "${google_container_cluster.foobar.zone}"
+	external_port = "1234"
 }`
