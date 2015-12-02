@@ -11,9 +11,9 @@ func TestAddExtraArgs(t *testing.T) {
 
 	run_args = addExtraArgs(run_args, optional_args, env_args)
 
-	for idx, val := range []string{"Sound", "Of", "the", "Train", "--Choo=Choo", "--env=\"Green=Leavesof\""} {
+	for idx, val := range []string{"Sound", "Of", "the", "Train", "--Choo=Choo", "--env=Green=Leavesof"} {
 		if val != run_args[idx] {
-			t.Fatalf("Failed to create run_args list correctly.  Error occured at position %d where answer key is %s and generated value is %s. Generated %q instead of Sound Of the Train --Choo=Choo --env=\"Green=Leavesof\"", idx, val, run_args[idx], run_args)
+			t.Fatalf("Failed to create run_args list correctly.  Error occured at position %d where answer key is %s and generated value is %s. Generated %q instead of Sound Of the Train --Choo=Choo --env=Green=Leavesof", idx, val, run_args[idx], run_args)
 		}
 	}
 }

@@ -33,7 +33,7 @@ func addExtraArgs(run_args []string, optional_args, env_args map[string]string) 
 		run_args = append(run_args, "--" + k + "=" +v)
 	}
 	for k, v := range env_args {
-		run_args = append(run_args, "--env=\"" + k + "=" + v + "\"")
+		run_args = append(run_args, "--env=" + k + "=" + v)
 	}
 
 	return run_args
