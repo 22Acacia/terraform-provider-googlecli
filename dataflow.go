@@ -9,15 +9,9 @@ import (
 	"os/exec"
 )
 
-type dataflowDescription struct {
-	ClientRequestId		string	`json:"clientRequestId"`
-	CreateTime		string	`json:"createTime"`
-	CurrentState		string	`json:"currentState"`
-	CurrentStateTime	string	`json:"currentStateTime"`
-	Id			string	`json:"id"`
-	Name			string	`json:"name"`
-	ProjectId		string	`json:"projectId"`
-	Type			string	`json:"type"`
+type DataflowDescription struct {
+	CurrentState	string	`json:"currentState"`
+	RequestedState	string	`json:"requestedState"`
 }
 
 
@@ -36,7 +30,7 @@ func CreateDataflow(name, classpath, class, project string, optional_args map[st
 	create_dataflow_cmd.Stderr = &stderr
 	err := create_dataflow_cmd.Run()
 	if err != nil {
-		return nil, fmt.Errorf("Error submitting dataflow job: %q", stderr.String())
+		return findJobIds(stderr.String()), fmt.Errorf("Error submitting dataflow job: %q", stderr.String())
 	}
 
 	return findJobIds(stdout.String()), nil
@@ -44,7 +38,7 @@ func CreateDataflow(name, classpath, class, project string, optional_args map[st
 
 func findJobIds(creation_stdout string) ([]string) {
 	//  job successfully submitted, now get the job id
-	jobidRe := regexp.MustCompile("Submitted job: ([0-9-_]+).*")
+	jobidRe := regexp.MustCompile("(\\d{4}-\\d{2}-\\d{2}_\\d{2}_\\d{2}_\\d{2}-\\d{10,})")
 	jobidmatches := jobidRe.FindAllStringSubmatch(creation_stdout, -1)
 	jobids := make([]string, 0)
 	for _, match := range jobidmatches {
@@ -54,28 +48,27 @@ func findJobIds(creation_stdout string) ([]string) {
 	return jobids
 }
 
-func ReadDataflow(jobkey string) (string, error) {
+func ReadDataflow(jobkey string) (*DataflowDescription, error) {
 	//  we will often read the job as we create it, but the state doesn't get set immediately so we
 	//  end up saving "" as the state.  which is bad times.  sleep five seconds to wait for status
 	//  to be set
 	time.Sleep(5 * time.Second)
-	job_check_cmd := exec.Command("gcloud", "alpha", "dataflow", "jobs", "describe", jobkey, "--format", "json")
+	job_check_cmd := exec.Command("gcloud", "alpha", "dataflow", "jobs", "describe", jobkey, "--format=json")
 	var stdout, stderr bytes.Buffer
 	job_check_cmd.Stdout = &stdout
 	job_check_cmd.Stderr = &stderr
 	err := job_check_cmd.Run()
 	if err != nil {
-		return "", fmt.Errorf("Error reading job %q with error %q", jobkey, stderr.String())
+		return nil, fmt.Errorf("Error reading job %q with error %q", jobkey, stderr.String())
 	}
 
-	var jobDesc dataflowDescription
-	err = parseJSON(&jobDesc, stdout.String())
+	jobDesc := &DataflowDescription{}
+	err = parseJSON(jobDesc, stdout.String())
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	job_state := jobDesc.CurrentState
 
-	return job_state, nil
+	return jobDesc, nil
 }
 
 func CancelDataflow(jobid, jobstate string) (bool, error) {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -60,10 +61,51 @@ func resourceDataflowCreate(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 
 	optional_args := cleanAdditionalArgs(d.Get("optional_args").(map[string]interface{}))
+
 	jobids, err := CreateDataflow(d.Get("name").(string), d.Get("classpath").(string), d.Get("class").(string), config.Project, optional_args)
-	if err != nil {
+	if err != nil && len(jobids) == 0 {
+		// call failed, abort
 		return err
+	} else if err != nil {
+		// we're updating, check and make sure all jobs found have been cancelled, if not, quit
+		for _, jobid := range jobids {
+			jobdesc, err := ReadDataflow(jobid)
+			if err != nil {
+				return err
+			}
+			if jobdesc.RequestedState != "JOB_STATE_CANCELLED" {
+				return fmt.Errorf("Attempting to create existing job name %s but prior job of same name with id %s still exists and is in state %s", d.Get("name").(string),  jobid, jobdesc.CurrentState)
+			}
+		}
+
+		// wait for 10 minutes or all jobs cancelled
+		not_all_cancelled := true
+		for i := 0; i < (10 * 6) && not_all_cancelled; i++ {
+			time.Sleep(10 * time.Second)
+			not_all_cancelled = false
+			//  check all jobs, if not in a cancelled state, set state flag
+			for _, jobid := range jobids {
+				jobdesc, err := ReadDataflow(jobid)
+				if err != nil {
+					return err
+				}
+				if jobdesc.CurrentState != "JOB_STATE_CANCELLED" {
+					not_all_cancelled = true
+				}
+			}
+		}
+
+		if not_all_cancelled {
+			return fmt.Errorf("Not all jobs entered into a cancelled state but all jobs have been requested to be cancelled.  Please wait a few minutes and try again.")
+		}
+
+		//  retry the job creation, any errors here and abort
+		jobids, err = CreateDataflow(d.Get("name").(string), d.Get("classpath").(string), d.Get("class").(string), config.Project, optional_args)
+		if err != nil {
+			return err
+		}
 	}
+	
 
 	d.Set("jobids", jobids)
 	d.SetId(d.Get("name").(string))
@@ -78,15 +120,15 @@ func resourceDataflowCreate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceDataflowRead(d *schema.ResourceData, meta interface{}) error {
 	job_states := make([]string, 0)
-	job_cnt := d.Get("jobid.#")
+	job_cnt := d.Get("jobids.#")
 	if job_cnt != nil {
 		for i := 0; i < job_cnt.(int); i++ {
-			jobidkey:= fmt.Sprintf("jobid.%d", i)
-			job_state, err := ReadDataflow(d.Get(jobidkey).(string))
+			jobidkey:= fmt.Sprintf("jobids.%d", i)
+			job_desc, err := ReadDataflow(d.Get(jobidkey).(string))
 			if err != nil {
 				return err
 			}
-			job_states = append(job_states, job_state)
+			job_states = append(job_states, job_desc.CurrentState)
 		}
 	}
 
@@ -102,11 +144,11 @@ func resourceDataflowDelete(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	failedCancel := make([]string, 0)
-	job_cnt := d.Get("jobid.#")
+	job_cnt := d.Get("jobids.#")
 	if job_cnt != nil {
 		for i := 0; i < job_cnt.(int); i++ {
-			jobidkey:= fmt.Sprintf("jobid.%d", i)
-			jobstatekey := fmt.Sprintf("jobstate.%d", i)
+			jobidkey:= fmt.Sprintf("jobids.%d", i)
+			jobstatekey := fmt.Sprintf("job_states.%d", i)
 			failedjob, err := CancelDataflow(d.Get(jobidkey).(string), d.Get(jobstatekey).(string))
 			if err != nil {
 				return err

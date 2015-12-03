@@ -40,17 +40,17 @@ func testAccCheckDataflowDestroy(s *terraform.State) error {
 			continue
 		}
 
-		jobstate, err := ReadDataflow(rs.Primary.ID)
+		jobdesc, err := ReadDataflow(rs.Primary.ID)
 		if err != nil {
 			return fmt.Errorf("Failed to read dataflow list")
 		}
 
-		if jobstate == "" {
+		if jobdesc.CurrentState == "" {
 			return fmt.Errorf("Dataflow jobs never started ")
 		}
 
-		if _, ok := disallowedDeletedStates[jobstate]; ok {
-			return fmt.Errorf("Dataflow job in disallowed state: %q", jobstate)
+		if _, ok := disallowedDeletedStates[jobdesc.CurrentState]; ok {
+			return fmt.Errorf("Dataflow job in disallowed state: %q", jobdesc.CurrentState)
 		}
 	}
 
@@ -75,17 +75,17 @@ func testAccDataflowExists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("No ID is set")
 		}
 
-		jobstate, err := ReadDataflow(rs.Primary.Attributes["jobids.0"])
+		jobdesc, err := ReadDataflow(rs.Primary.Attributes["jobids.0"])
 		if err != nil {
-			return fmt.Errorf("Command line read has errored: %q with rs.Primary hash: %q", err, rs.Primary)
+			return fmt.Errorf("In test: Command line read has errored: %q with rs.Primary hash: %q", err, rs.Primary)
 		}
 
-		if jobstate == "" {
+		if jobdesc.CurrentState == "" {
 			return fmt.Errorf("Dataflow jobs never started")
 		}
 
-		if _, ok := disallowedCreatedStates[jobstate]; ok {
-			return fmt.Errorf("Dataflow job in disallowed state: %q", jobstate)
+		if _, ok := disallowedCreatedStates[jobdesc.CurrentState]; ok {
+			return fmt.Errorf("Dataflow job in disallowed state: %q", jobdesc.CurrentState)
 		}
 
 		return nil
