@@ -79,6 +79,11 @@ func resourceContainerReplicaControllerCreate(d *schema.ResourceData, meta inter
 		return err
 	}
 
+	err = resourceContainerReplicaControllerRead(d, meta)
+	if err != nil {
+		return err
+	}
+
 	d.SetId(uid)
 
 	return nil

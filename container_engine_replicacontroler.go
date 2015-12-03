@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 	"bytes"
 	"os/exec"
 )
@@ -75,6 +76,20 @@ func expose_rc_externally(name, external_port string) (error) {
 	err := expose_rc.Run()
 	if err != nil {
 		return fmt.Errorf("Error creating external load balancer on a specific port: %q", stderr.String())
+	}
+
+	// wait at most 10 minutes for external ip to be set
+	exip_set := false
+	for i := 0; i < (10 * 6) && !exip_set; i++ {
+		time.Sleep(10 * time.Second)
+		exip, err := fetchExternalIp(name)
+		if err != nil {
+			return err
+		}
+		
+		if exip != "" {
+			exip_set = true
+		}
 	}
 
 	return nil
