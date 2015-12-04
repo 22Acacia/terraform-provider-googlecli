@@ -11,16 +11,23 @@ google provider.
 
 To use:
 - check out
-- build
-- copy binary to somewhere in your path
-- edit terraform.rc (see terraform docs for where) to have the
+- run tests 
+  - add several variables to your environment:
+    - TF_ACC (set to anything)
+    - GOOGLE_CREDENTIALS, set to the contents of a secrets file downloaded from google
+    - GOOGLE_PROJECT, set to the project for the above credentials
+    - GOOGLE_REGION, set to us-central1
+  - execute tests using makefile
+    - make tests TESTARGS=<args to pass to 'go test'>
+    - ex to only run dataflow tests "make test TESTARGS='--run=Dataflow'"
+- install binary to $GOBIN to make it usable system wide (assumes GOBIN is in your PATH)
+  - make install
+- edit terraform.rc (see terraform docs here: https://terraform.io/docs/plugins/basics.html) to have the
   following block:
   providers {
     googlecli = "terraform-provider-googlecli"
   }
-
-
-important notes for later:
-  when testing, terraform will yell about some missing env
-variables.  I will write up what to set for them and/or make
-a make file.  it'll be rad, you'll see
+- build and copy file to terraform install
+  - locate terraform install
+  - make build
+  - cp terraform-provider-googlecli TERRAFORM_INSTALL_LOCATION
