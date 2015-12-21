@@ -1,6 +1,6 @@
 deployment:
   demo:
-    branch: circle-ci-dev
+    branch: master
     commands:
       - cd $HOME/$CIRCLE_PROJECT_REPONAME/ && make build
       - gsutil cp $HOME/$CIRCLE_PROJECT_REPONAME/terraform-provider-googlecli gs://build-artifacts-public-eu/terraform-provider-googlecli
