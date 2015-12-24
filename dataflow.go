@@ -53,7 +53,7 @@ func ReadDataflow(jobkey string, project string) (*DataflowDescription, error) {
 	//  end up saving "" as the state.  which is bad times.  sleep five seconds to wait for status
 	//  to be set
 	time.Sleep(5 * time.Second)
-	job_check_cmd := exec.Command("gcloud", "alpha", "dataflow", "jobs", "describe", jobkey, "--format=json", "--project=" +project)
+	job_check_cmd := exec.Command("gcloud", "alpha", "dataflow", "jobs", "describe", jobkey, "--format=json", "--project=" + project)
 	var stdout, stderr bytes.Buffer
 	job_check_cmd.Stdout = &stdout
 	job_check_cmd.Stderr = &stderr
@@ -74,7 +74,7 @@ func ReadDataflow(jobkey string, project string) (*DataflowDescription, error) {
 func CancelDataflow(jobid, jobstate string, project string) (bool, error) {
 	failedCancel := false
 	if jobstate == "JOB_STATE_RUNNING" {
-		job_cancel_cmd := exec.Command("gcloud", "alpha", "dataflow", "jobs", "cancel", jobid, "--project="+project)
+		job_cancel_cmd := exec.Command("gcloud", "alpha", "dataflow", "jobs", "cancel", jobid, "--project="+ project)
 		var stdout, stderr bytes.Buffer
 		job_cancel_cmd.Stdout = &stdout
 		job_cancel_cmd.Stderr = &stderr

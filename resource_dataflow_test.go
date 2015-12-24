@@ -40,7 +40,7 @@ func testAccCheckDataflowDestroy(s *terraform.State) error {
 			continue
 		}
 
-		jobdesc, err := ReadDataflow(rs.Primary.ID)
+		jobdesc, err := ReadDataflow(rs.Primary.ID, testAccProviders["googlecli"].Get("project").(string))
 		if err != nil {
 			return fmt.Errorf("Failed to read dataflow list")
 		}
@@ -75,7 +75,7 @@ func testAccDataflowExists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("No ID is set")
 		}
 
-		jobdesc, err := ReadDataflow(rs.Primary.Attributes["jobids.0"])
+		jobdesc, err := ReadDataflow(rs.Primary.Attributes["jobids.0"], testAccProviders["googlecli"].Get("project").(string))
 		if err != nil {
 			return fmt.Errorf("In test: Command line read has errored: %q with rs.Primary hash: %q", err, rs.Primary)
 		}
