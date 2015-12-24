@@ -69,7 +69,7 @@ func resourceDataflowCreate(d *schema.ResourceData, meta interface{}) error {
 	} else if err != nil {
 		// we're updating, check and make sure all jobs found have been cancelled, if not, quit
 		for _, jobid := range jobids {
-			jobdesc, err := ReadDataflow(jobid)
+			jobdesc, err := ReadDataflow(jobid, config.Project)
 			if err != nil {
 				return err
 			}
@@ -85,7 +85,7 @@ func resourceDataflowCreate(d *schema.ResourceData, meta interface{}) error {
 			not_all_cancelled = false
 			//  check all jobs, if not in a cancelled state, set state flag
 			for _, jobid := range jobids {
-				jobdesc, err := ReadDataflow(jobid)
+				jobdesc, err := ReadDataflow(jobid, config.Project)
 				if err != nil {
 					return err
 				}
@@ -119,12 +119,13 @@ func resourceDataflowCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceDataflowRead(d *schema.ResourceData, meta interface{}) error {
+	config := meta.(*Config)
 	job_states := make([]string, 0)
 	job_cnt := d.Get("jobids.#")
 	if job_cnt != nil {
 		for i := 0; i < job_cnt.(int); i++ {
 			jobidkey:= fmt.Sprintf("jobids.%d", i)
-			job_desc, err := ReadDataflow(d.Get(jobidkey).(string))
+			job_desc, err := ReadDataflow(d.Get(jobidkey).(string), config.Project)
 			if err != nil {
 				return err
 			}
@@ -138,6 +139,8 @@ func resourceDataflowRead(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceDataflowDelete(d *schema.ResourceData, meta interface{}) error {
+
+	config := meta.(*Config)
 	err := resourceDataflowRead(d, meta)
 	if err != nil {
 		return err
@@ -149,7 +152,7 @@ func resourceDataflowDelete(d *schema.ResourceData, meta interface{}) error {
 		for i := 0; i < job_cnt.(int); i++ {
 			jobidkey:= fmt.Sprintf("jobids.%d", i)
 			jobstatekey := fmt.Sprintf("job_states.%d", i)
-			failedjob, err := CancelDataflow(d.Get(jobidkey).(string), d.Get(jobstatekey).(string))
+			failedjob, err := CancelDataflow(d.Get(jobidkey).(string), d.Get(jobstatekey).(string), config.Project)
 			if err != nil {
 				return err
 			}
