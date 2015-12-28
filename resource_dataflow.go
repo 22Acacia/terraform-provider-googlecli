@@ -73,34 +73,37 @@ func resourceDataflowCreate(d *schema.ResourceData, meta interface{}) error {
 			if err != nil {
 				return err
 			}
-			if jobdesc.RequestedState != "JOB_STATE_CANCELLED" {
-				return fmt.Errorf("Attempting to create existing job name %s but prior job of same name with id %s still exists and is in state %s", d.Get("name").(string),  jobid, jobdesc.CurrentState)
+			if jobdesc.RequestedState == "JOB_STATE_RUNNING" || jobdesc.RequestedState == "JOB_STATE_UPDATED" {
+				return fmt.Errorf("Attempting to create existing job name %s but prior job of same name with id %s still exists and is in state %s which we won't blindly overwrite.", d.Get("name").(string),  jobid, jobdesc.CurrentState)
 			}
 		}
 
-		// wait for 10 minutes or all jobs cancelled
-		not_all_cancelled := true
+		// wait for 10 minutes or all jobs cancelled/dead/unknown
+		not_all_toast := true
 		for i := 0; i < (10 * 6) && not_all_cancelled; i++ {
 			time.Sleep(10 * time.Second)
-			not_all_cancelled = false
+			not_all_toast = false
 			//  check all jobs, if not in a cancelled state, set state flag
 			for _, jobid := range jobids {
 				jobdesc, err := ReadDataflow(jobid, config.Project)
 				if err != nil {
 					return err
 				}
-				if jobdesc.CurrentState != "JOB_STATE_CANCELLED" {
-					not_all_cancelled = true
+				if jobdesc.RequestedState == "JOB_STATE_RUNNING" || jobdesc.RequestedState == "JOB_STATE_UPDATED" {
+					not_all_toast = true
 				}
 			}
 		}
 
-		if not_all_cancelled {
-			return fmt.Errorf("Not all jobs entered into a cancelled state but all jobs have been requested to be cancelled.  Please wait a few minutes and try again.")
+		if not_all_toast {
+			return fmt.Errorf("Not all jobs entered into a cancelled/dead/unknown state but all jobs have been requested to be cancelled.  Please wait a few minutes and try again.")
 		}
 
 		//  retry the job creation, any errors here and abort
-		jobids, err = CreateDataflow(d.Get("name").(string), d.Get("classpath").(string), d.Get("class").(string), config.Project, optional_args)
+		//  dataflow won't let us reuse job names so at this point gen a timestamp as a string and append
+		//    to the supplied name and go with god.  we use jobids for all the work anyway.
+		nameTimestamp := time.Now().Format(time.RFC3339)
+		jobids, err = CreateDataflow(d.Get("name").(string) + "." + nameTimestamp, d.Get("classpath").(string), d.Get("class").(string), config.Project, optional_args)
 		if err != nil {
 			return err
 		}
