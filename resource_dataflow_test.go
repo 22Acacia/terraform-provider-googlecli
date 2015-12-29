@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"fmt"
 	"time"
 	"testing"
@@ -34,13 +35,15 @@ var disallowedDeletedStates = map[string]bool {
 	"JOB_STATE_FAILED": true,
 	"JOB_STATE_UPDATED": true,
 }
+
 func testAccCheckDataflowDestroy(s *terraform.State) error {
+	projectName := os.Getenv("GOOGLE_PROJECT") 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "googlecli_dataflow" {
 			continue
 		}
 
-		jobdesc, err := ReadDataflow(rs.Primary.ID, "hx-test")
+		jobdesc, err := ReadDataflow(rs.Primary.ID, projectName)
 		if err != nil {
 			return fmt.Errorf("Failed to read dataflow list")
 		}
@@ -65,6 +68,7 @@ var disallowedCreatedStates = map[string] bool {
 }
 
 func testAccDataflowExists(n string) resource.TestCheckFunc {
+	projectName := os.Getenv("GOOGLE_PROJECT") 
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 		if !ok {
@@ -75,7 +79,7 @@ func testAccDataflowExists(n string) resource.TestCheckFunc {
 			return fmt.Errorf("No ID is set")
 		}
 
-		jobdesc, err := ReadDataflow(rs.Primary.Attributes["jobids.0"], "hx-test")
+		jobdesc, err := ReadDataflow(rs.Primary.Attributes["jobids.0"], projectName)
 		if err != nil {
 			return fmt.Errorf("In test: Command line read has errored: %q with rs.Primary hash: %q", err, rs.Primary)
 		}
