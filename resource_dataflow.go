@@ -80,7 +80,7 @@ func resourceDataflowCreate(d *schema.ResourceData, meta interface{}) error {
 
 		// wait for 10 minutes or all jobs cancelled/dead/unknown
 		not_all_toast := true
-		for i := 0; i < (10 * 6) && not_all_cancelled; i++ {
+		for i := 0; i < (10 * 6) && not_all_toast; i++ {
 			time.Sleep(10 * time.Second)
 			not_all_toast = false
 			//  check all jobs, if not in a cancelled state, set state flag
@@ -102,10 +102,10 @@ func resourceDataflowCreate(d *schema.ResourceData, meta interface{}) error {
 		//  retry the job creation, any errors here and abort
 		//  dataflow won't let us reuse job names so at this point gen a timestamp as a string and append
 		//    to the supplied name and go with god.  we use jobids for all the work anyway.
-		nameTimestamp := time.Now().Format(time.RFC3339)
+		nameTimestamp := time.Now().Format("2006-01-02T15-04-05Z07-00")
 		jobids, err = CreateDataflow(d.Get("name").(string) + "." + nameTimestamp, d.Get("classpath").(string), d.Get("class").(string), config.Project, optional_args)
 		if err != nil {
-			return err
+			return fmt.Errorf("Failed to createa job named %q with error: %q", nameTimestamp,err)
 		}
 	}
 	

@@ -29,6 +29,23 @@ func TestAccDataflowCreate(t *testing.T) {
 	})
 }
 
+func TestAccDataflowCreateRepeat(t *testing.T) {
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckDataflowDestroy,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: testAccDataflow,
+				Check: resource.ComposeTestCheckFunc(
+					testAccDataflowExists(
+						"googlecli_dataflow.foobar"),
+				),
+			},
+		},
+	})
+}
 var disallowedDeletedStates = map[string]bool {
 	"JOB_STATE_RUNNING": true,
 	"JOB_STATE_UNKNOWN": true,
@@ -43,17 +60,19 @@ func testAccCheckDataflowDestroy(s *terraform.State) error {
 			continue
 		}
 
-		jobdesc, err := ReadDataflow(rs.Primary.ID, projectName)
+		jobdesc, err := ReadDataflow(rs.Primary.Attributes["jobids.0"], projectName)
 		if err != nil {
-			return fmt.Errorf("Failed to read dataflow list")
+			return fmt.Errorf("Failed to read dataflow list: %q", err)
 		}
 
 		if jobdesc.CurrentState == "" {
 			return fmt.Errorf("Dataflow jobs never started ")
 		}
-
-		if _, ok := disallowedDeletedStates[jobdesc.CurrentState]; ok {
-			return fmt.Errorf("Dataflow job in disallowed state: %q", jobdesc.CurrentState)
+				
+		_, disallowedCurrent := disallowedDeletedStates[jobdesc.CurrentState]
+		_, disallowedRequested := disallowedDeletedStates[jobdesc.RequestedState]
+		if disallowedCurrent && disallowedRequested {
+			return fmt.Errorf("Dataflow job in disallowed state: %q with requested state in: %q", jobdesc.CurrentState, jobdesc.RequestedState)
 		}
 	}
 
@@ -89,7 +108,7 @@ func testAccDataflowExists(n string) resource.TestCheckFunc {
 		}
 
 		if _, ok := disallowedCreatedStates[jobdesc.CurrentState]; ok {
-			return fmt.Errorf("Dataflow job in disallowed state: %q", jobdesc.CurrentState)
+			return fmt.Errorf("Dataflow job in starting in disallowed state: %q", jobdesc.CurrentState)
 		}
 
 		return nil
