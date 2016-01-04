@@ -1,0 +1,5 @@
+#  args for dealing with terraform deps
+export TF_ACC=phony
+export GOOGLE_CREDENTIALS=<ENTER YOUR GEN'D JSON DOC>
+export GOOGLE_PROJECT=<YOUR PROJECT NAME>
+export GOOGLE_REGION=us-central1
