@@ -1,8 +1,12 @@
 package main
 
 import (
+	"io"
+	"os"
 	"fmt"
 	"time"
+	"strings"
+	"crypto/md5"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -52,6 +56,13 @@ func resourceDataflow() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+			},
+			
+			"jar_checksums": &schema.Schema{
+				Type:	  schema.TypeMap,
+				Computed: true,
+				ForceNew: true,
+				Elem: 	  schema.TypeString,
 			},
 		},
 	}
@@ -123,6 +134,8 @@ func resourceDataflowCreate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceDataflowRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
+
+	//  determine job states
 	job_states := make([]string, 0)
 	job_cnt := d.Get("jobids.#")
 	if job_cnt != nil {
@@ -136,9 +149,33 @@ func resourceDataflowRead(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	//  calculate md5 of each jar in classpath so we can regen dataflow job on change
+	jars := strings.Splits(d.Get("classpath"), ";")
+	jar_checksums := []map[string]string
+	for _, jar := range jars {
+		jar_checksums[jar] := computeMd5(jar)
+	}
+
 	d.Set("job_states", job_states)
+	d.Set("jar_checksums", jar_checksums)
 
 	return nil
+}
+
+//  function swiped from:  http://dev.pawelsz.eu/2014/11/google-golang-compute-md5-of-file.html
+func computeMd5(filePath string) (string, error) {
+ 	file, err := os.Open(filePath)
+ 	if err != nil {
+    	return "", err
+ 	}
+  	defer file.Close()
+ 
+  	hash := md5.New()
+  	if _, err := io.Copy(hash, file); err != nil {
+    	return "", err
+  	}
+ 
+  	return fmt.Sprintf("%x", hash.Sum(nil)), nil
 }
 
 func resourceDataflowDelete(d *schema.ResourceData, meta interface{}) error {
