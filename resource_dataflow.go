@@ -4,6 +4,7 @@ import (
 	"io"
 	"os"
 	"fmt"
+	"sort"
 	"time"
 	"strings"
 	"crypto/md5"
@@ -58,11 +59,11 @@ func resourceDataflow() *schema.Resource {
 				},
 			},
 			
-			"jar_checksums": &schema.Schema{
-				Type:	  schema.TypeMap,
+			"jars_md5": &schema.Schema{
+				Type:	  schema.TypeString,
+				Optional: true,
 				Computed: true,
 				ForceNew: true,
-				Elem: 	  schema.TypeString,
 			},
 		},
 	}
@@ -148,34 +149,40 @@ func resourceDataflowRead(d *schema.ResourceData, meta interface{}) error {
 			job_states = append(job_states, job_desc.CurrentState)
 		}
 	}
+	d.Set("job_states", job_states)
 
 	//  calculate md5 of each jar in classpath so we can regen dataflow job on change
-	jars := strings.Splits(d.Get("classpath"), ";")
-	jar_checksums := []map[string]string
+	jars := strings.Split(d.Get("classpath").(string), ":")
+	sort.Strings(jars)
+	var jars_md5 []byte
 	for _, jar := range jars {
-		jar_checksums[jar] := computeMd5(jar)
+		jard5, err := computeMd5(jar)
+		if err != nil {
+			return err
+		}
+		
+		jars_md5 = append(jars_md5, jard5...)
 	}
 
-	d.Set("job_states", job_states)
-	d.Set("jar_checksums", jar_checksums)
+	d.Set("jars_md5", fmt.Sprintf("%x", jars_md5))
 
 	return nil
 }
 
 //  function swiped from:  http://dev.pawelsz.eu/2014/11/google-golang-compute-md5-of-file.html
-func computeMd5(filePath string) (string, error) {
+func computeMd5(filePath string) ([]byte, error) {
  	file, err := os.Open(filePath)
  	if err != nil {
-    	return "", err
+    	return nil, err
  	}
   	defer file.Close()
  
   	hash := md5.New()
   	if _, err := io.Copy(hash, file); err != nil {
-    	return "", err
+    	return nil, err
   	}
  
-  	return fmt.Sprintf("%x", hash.Sum(nil)), nil
+  	return hash.Sum(nil), nil
 }
 
 func resourceDataflowDelete(d *schema.ResourceData, meta interface{}) error {
