@@ -41,6 +41,15 @@ func resourceContainerReplicaController() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
+			
+			"resource_hash": &schema.Schema{
+				Type:     schema.TypeList,
+				ForceNew: true,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 
 			"optional_args": &schema.Schema{
 				Type:     schema.TypeMap,
