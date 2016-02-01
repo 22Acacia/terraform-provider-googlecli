@@ -42,7 +42,7 @@ func resourceContainerReplicaController() *schema.Resource {
 				ForceNew: true,
 			},
 			
-			"resource_hash": &schema.Schema{
+			"resource_version": &schema.Schema{
 				Type:     schema.TypeList,
 				ForceNew: true,
 				Optional: true,

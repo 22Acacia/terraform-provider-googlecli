@@ -38,7 +38,7 @@ func resourceDataflow() *schema.Resource {
 				Elem:	  schema.TypeString,
 			},
 			
-			"resource-hashes": &schema.Schema{
+			"resource_hashes": &schema.Schema{
 				Type:     schema.TypeList,
 				ForceNew: true,
 				Optional: true,
