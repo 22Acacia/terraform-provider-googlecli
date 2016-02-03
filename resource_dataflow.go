@@ -114,7 +114,7 @@ func resourceDataflowCreate(d *schema.ResourceData, meta interface{}) error {
 		nameTimestamp := time.Now().Format("2006-01-02T15-04-05Z07-00")
 		jobids, err = CreateDataflow(d.Get("name").(string) + "." + nameTimestamp, d.Get("classpath").(string), d.Get("class").(string), config.Project, optional_args)
 		if err != nil {
-			return fmt.Errorf("Failed to createa job named %q with error: %q", nameTimestamp,err)
+			return fmt.Errorf("Failed to createa job named %q with error: %q", d.Get("name").(string) + "." + nameTimestamp,err)
 		}
 	}
 	
