@@ -112,9 +112,9 @@ func resourceDataflowCreate(d *schema.ResourceData, meta interface{}) error {
 		//  dataflow won't let us reuse job names so at this point gen a timestamp as a string and append
 		//    to the supplied name and go with god.  we use jobids for all the work anyway.
 		nameTimestamp := time.Now().Format("2006-01-02T15-04-05Z07-00")
-		jobids, err = CreateDataflow(d.Get("name").(string) + "." + nameTimestamp, d.Get("classpath").(string), d.Get("class").(string), config.Project, optional_args)
+		jobids, err = CreateDataflow(d.Get("name").(string) + "-" + nameTimestamp, d.Get("classpath").(string), d.Get("class").(string), config.Project, optional_args)
 		if err != nil {
-			return fmt.Errorf("Failed to createa job named %q with error: %q", d.Get("name").(string) + "." + nameTimestamp,err)
+			return fmt.Errorf("Failed to createa job named %q with error: %q", d.Get("name").(string) + "-" + nameTimestamp,err)
 		}
 	}
 	
