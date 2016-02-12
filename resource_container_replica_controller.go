@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"strings"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -98,11 +99,23 @@ func resourceContainerReplicaControllerCreate(d *schema.ResourceData, meta inter
 	return nil
 }
 
+// if the error string has a 'code=404' in it, the owning cluster is gone.  
+//  remove the rc from the tfstate file
+func checkMissingCluster(d *schema.ResourceData, err error) error {
+	if strings.Contains(err.Error(), "code=404") {
+		//  the owning cluster doesn't exist, the container can't
+		d.SetId("")
+		return nil
+	}
+	return err	
+}
+
+
 func resourceContainerReplicaControllerRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
 	err := config.initKubectl(d.Get("container_name").(string), d.Get("zone").(string))
 	if err != nil {
-		return err
+		return checkMissingCluster(d, err)
 	}
 
 	pod_count, external_ip, err := ReadKubeRC(d.Get("name").(string), d.Get("external_port").(string))
@@ -126,7 +139,7 @@ func resourceContainerReplicaControllerDelete(d *schema.ResourceData, meta inter
 	config := meta.(*Config)
 	err := config.initKubectl(d.Get("container_name").(string), d.Get("zone").(string))
 	if err != nil {
-		return err
+		return checkMissingCluster(d, err)
 	}
 
 	err = DeleteKubeRC(d.Get("name").(string),d.Get("external_port").(string)) 
