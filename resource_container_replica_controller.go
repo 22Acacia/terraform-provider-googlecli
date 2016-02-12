@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"strings"
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -101,7 +102,7 @@ func resourceContainerReplicaControllerCreate(d *schema.ResourceData, meta inter
 // if the error string has a 'code=404' in it, the owning cluster is gone.  
 //  remove the rc from the tfstate file
 func checkMissingCluster(d *schema.ResourceData, err error) error {
-	if strings.Contains(err.Error(), 'code=404') {
+	if strings.Contains(err.Error(), "code=404") {
 		//  the owning cluster doesn't exist, the container can't
 		d.SetId("")
 		return nil
