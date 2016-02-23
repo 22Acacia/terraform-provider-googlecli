@@ -98,7 +98,7 @@ func (c *Config) initKubectl(container, zone string) error {
 		return fmt.Errorf("kubectl is not installed.  Please install and try again\n")
 	}
 
-	cred_gen_cmd := exec.Command("gcloud", "beta",  "container", "clusters", "get-credentials", container, "--project=" + c.Project, "--zone=" + zone)
+	cred_gen_cmd := exec.Command("gcloud",  "container", "clusters", "get-credentials", container, "--project=" + c.Project, "--zone=" + zone)
 	var stdout, stderr bytes.Buffer
 	cred_gen_cmd.Stdout = &stdout
 	cred_gen_cmd.Stderr = &stderr
