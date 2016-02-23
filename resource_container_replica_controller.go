@@ -121,15 +121,21 @@ func resourceContainerReplicaControllerRead(d *schema.ResourceData, meta interfa
 
     //  the endpoint kubectl hits is flaky.  put a loop on it.
 	pod_count, external_ip, err := ReadKubeRC(d.Get("name").(string), d.Get("external_port").(string))
-	for i := 0; i < (10 * 6) && err != nil; i++ {
-		time.Sleep(10 * time.Second)
-		pod_count, external_ip, err = ReadKubeRC(d.Get("name").(string), d.Get("external_port").(string))
-	}
-
 	if err != nil {
-		return err
+		is_error := true
+		for i := 0; i < (10 * 6) && is_error; i++ {
+			time.Sleep(10 * time.Second)
+			pod_count, external_ip, err = ReadKubeRC(d.Get("name").(string), d.Get("external_port").(string))
+			if err == nil {
+				is_error = false
+			}
+		}
+		if err != nil {
+			return err
+		}
 	}
 
+	
 	if pod_count == 0 {
 		//  something has gone awry, there should always be at least one pod
 		log.Printf("There are no pods associated with this Replica Controller.  This is unexpected and probably wrong.  Please investigate")
