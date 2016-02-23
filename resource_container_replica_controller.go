@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"time"
 	"strings"
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -118,7 +119,13 @@ func resourceContainerReplicaControllerRead(d *schema.ResourceData, meta interfa
 		return checkMissingCluster(d, err)
 	}
 
+    //  the endpoint kubectl hits is flaky.  put a loop on it.
 	pod_count, external_ip, err := ReadKubeRC(d.Get("name").(string), d.Get("external_port").(string))
+	for i := 0; i < (10 * 6) && err != nil; i++ {
+		time.Sleep(10 * time.Second)
+		pod_count, external_ip, err = ReadKubeRC(d.Get("name").(string), d.Get("external_port").(string))
+	}
+
 	if err != nil {
 		return err
 	}
