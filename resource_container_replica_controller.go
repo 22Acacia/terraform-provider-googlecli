@@ -119,11 +119,11 @@ func resourceContainerReplicaControllerRead(d *schema.ResourceData, meta interfa
 		return checkMissingCluster(d, err)
 	}
 
-    //  the endpoint kubectl hits is flaky.  put a loop on it.
+    //  the endpoint kubectl hits is flaky.  put a loop on it.  5 minutes
 	pod_count, external_ip, err := ReadKubeRC(d.Get("name").(string), d.Get("external_port").(string))
 	if err != nil {
 		is_error := true
-		for i := 0; i < (10 * 6) && is_error; i++ {
+		for i := 0; i < (5 * 6) && is_error; i++ {
 			time.Sleep(10 * time.Second)
 			pod_count, external_ip, err = ReadKubeRC(d.Get("name").(string), d.Get("external_port").(string))
 			if err == nil {
