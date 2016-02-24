@@ -119,7 +119,7 @@ func checkKubectlApiFlaking(err error) bool {
 }
 
 func checkDeletedContainer(name string, err error) bool {
-	if strings.Contains(err.Error(), "\"" + name + "\" not found") {
+	if strings.Contains(err.Error(), name + "\\\" not found") {
 		return true
 	}
 	return false
