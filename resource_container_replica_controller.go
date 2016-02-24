@@ -111,6 +111,20 @@ func checkMissingCluster(d *schema.ResourceData, err error) error {
 	return err	
 }
 
+func checkKubectlApiFlaking(err error) bool {
+	if strings.Contains(err.Error(), "error: couldn't read version from server") {
+		return true
+	}
+	return false
+}
+
+func checkDeletedContainer(name string, err error) bool {
+	if strings.Contains(err.Error(), "\"" + name + "\" not found") {
+		return true
+	}
+	return false
+}
+
 
 func resourceContainerReplicaControllerRead(d *schema.ResourceData, meta interface{}) error {
 	config := meta.(*Config)
@@ -118,16 +132,23 @@ func resourceContainerReplicaControllerRead(d *schema.ResourceData, meta interfa
 	if err != nil {
 		return checkMissingCluster(d, err)
 	}
-
+	
     //  the endpoint kubectl hits is flaky.  put a loop on it.  5 minutes
 	pod_count, external_ip, err := ReadKubeRC(d.Get("name").(string), d.Get("external_port").(string))
 	if err != nil {
-		is_error := true
+		if checkDeletedContainer(d.Get("name").(string), err) {
+			d.SetId("")
+			log.Println("Container %q was deleted out of scope.  Removing from tf", d.Get("name").(string))
+			return nil
+		}
+		is_error := checkKubectlApiFlaking(err)
 		for i := 0; i < (5 * 6) && is_error; i++ {
 			time.Sleep(10 * time.Second)
 			pod_count, external_ip, err = ReadKubeRC(d.Get("name").(string), d.Get("external_port").(string))
 			if err == nil {
 				is_error = false
+			} else {
+				is_error = checkKubectlApiFlaking(err)
 			}
 			log.Println("Waiting for a non-error response from the kubectl API...")
 		}
