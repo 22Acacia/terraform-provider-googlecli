@@ -129,6 +129,7 @@ func resourceContainerReplicaControllerRead(d *schema.ResourceData, meta interfa
 			if err == nil {
 				is_error = false
 			}
+			log.Println("Waiting for a non-error response from the kubectl API...")
 		}
 		if err != nil {
 			return err

@@ -98,8 +98,18 @@ func (c *Config) initKubectl(container, zone string) error {
 		return fmt.Errorf("kubectl is not installed.  Please install and try again\n")
 	}
 
-	cred_gen_cmd := exec.Command("gcloud",  "container", "clusters", "get-credentials", container, "--project=" + c.Project, "--zone=" + zone)
+	//  project is no longer a cli flag, its only accessible through the config subcommand
+	set_proj_cmd := exec.Command("gcloud", "config", "set", "project", c.Project)
 	var stdout, stderr bytes.Buffer
+	set_proj_cmd.Stdout = &stdout
+	set_proj_cmd.Stderr = &stderr
+	err = set_proj_cmd.Run()
+	if err != nil {
+		return fmt.Errorf("Gcloud project set failed: %s\n", stderr.String())
+	}
+	
+
+	cred_gen_cmd := exec.Command("gcloud",  "container", "clusters", "get-credentials", container, "--zone=" + zone)
 	cred_gen_cmd.Stdout = &stdout
 	cred_gen_cmd.Stderr = &stderr
 	err = cred_gen_cmd.Run()
