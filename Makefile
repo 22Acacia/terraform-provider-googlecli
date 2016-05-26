@@ -4,7 +4,7 @@ default: test
 
 #  build creates the executable plugin
 build: 
-	go build -o terraform-provider-googleappengine
+	go build -o terraform-provider-googlecli
 
 #  install installs the built plugin to go path bin
 install: build
