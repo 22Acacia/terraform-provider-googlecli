@@ -11,5 +11,5 @@ deployment:
       - cd $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/ && make build
       - cd $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/ && echo $GOOGLE_CREDENTIALS > account.json
       - /opt/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/account.json
-      - gsutil cp $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/terraform-provider-googleappengine gs://$GSTORAGE_DEST_BUCKET/terraform-provider-googlecli
+      - gsutil cp $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/terraform-provider-googlecli gs://$GSTORAGE_DEST_BUCKET/terraform-provider-googlecli
       - gsutil acl ch -u AllUsers:R gs://$GSTORAGE_DEST_BUCKET/terraform-provider-googlecli
