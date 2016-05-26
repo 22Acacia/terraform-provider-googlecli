@@ -138,7 +138,7 @@ func resourceContainerReplicaControllerRead(d *schema.ResourceData, meta interfa
 	if err != nil {
 		if checkDeletedContainer(d.Get("name").(string), err) {
 			d.SetId("")
-			log.Println("Container %q was deleted out of scope.  Removing from tf", d.Get("name").(string))
+			log.Printf("Container %s was deleted out of scope.  Removing from tf\n", d.Get("name").(string))
 			return nil
 		}
 		is_error := checkKubectlApiFlaking(err)

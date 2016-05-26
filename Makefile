@@ -4,11 +4,11 @@ default: test
 
 #  build creates the executable plugin
 build: 
-	go build -o terraform-provider-googlecli
+	go build -o terraform-provider-googleappengine
 
 #  install installs the built plugin to go path bin
 install: build
-	mv terraform-provider-googlecli $(GOPATH)/bin/terraform-provider-googlecli
+	mv terraform-provider-googleappengine $(GOPATH)/bin/terraform-provider-googleappengine
 
 # test runs the unit tests and vets the code
 test: 
@@ -30,7 +30,7 @@ vet:
 		go get golang.org/x/tools/cmd/vet; \
 	fi
 	@echo "go tool vet $(VETARGS) ."
-	@go tool vet $(VETARGS) . ; if [ $$? -eq 1 ]; then \
+	@go tool vet $(VETARGS) *.go ; if [ $$? -eq 1 ]; then \
 		echo ""; \
 		echo "Vet found suspicious constructs. Please check the reported constructs"; \
 		echo "and fix them if necessary before submitting the code for review."; \
