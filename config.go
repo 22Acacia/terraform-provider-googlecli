@@ -70,7 +70,7 @@ func (c *Config) initGcloud() error {
 		return fmt.Errorf("java jre (at least) is not installed.  Please install and try again\n")
 	}
 
-	auth_cmd := exec.Command("gcloud", "auth", "activate-service-account", "--key-file", c.CredentialsFile)
+	auth_cmd := exec.Command("gcloud", "--verbosity=debug", "--quiet",  "auth", "activate-service-account", "--key-file", c.CredentialsFile)
 	var stdout, stderr bytes.Buffer
 	auth_cmd.Stdout = &stdout
 	auth_cmd.Stderr = &stderr
@@ -109,7 +109,7 @@ func (c *Config) initKubectl(container, zone string) error {
 	}
 	
 
-	cred_gen_cmd := exec.Command("gcloud",  "container", "clusters", "get-credentials", container, "--zone=" + zone)
+	cred_gen_cmd := exec.Command("gcloud", "--verbosity=debug", "--quiet", "container", "clusters", "get-credentials", container, "--zone=" + zone)
 	cred_gen_cmd.Stdout = &stdout
 	cred_gen_cmd.Stderr = &stderr
 	err = cred_gen_cmd.Run()
