@@ -42,7 +42,7 @@ func addExtraArgs(run_args []string, optional_args, env_args map[string]string) 
 
 func CreateKubeRC(name, dockerImage, external_port string, optional_args, env_args map[string]string) (string, error) {
 	kubectl_cmd := "kubectl"
-	kubectl_run_args :=[]string{"run", name, "--image=" + dockerImage, "--output=json"}
+	kubectl_run_args :=[]string{"--verbosity=debug", "--quiet","run", name, "--image=" + dockerImage, "--output=json"}
 	kubectl_run_args = addExtraArgs(kubectl_run_args, optional_args, env_args)
 	run_replicacontroler := exec.Command(kubectl_cmd, kubectl_run_args...)
 	var stdout, stderr bytes.Buffer
@@ -97,7 +97,7 @@ func expose_rc_externally(name, external_port string) (error) {
 
 //  calling function needs to handle if the read is successful but the rc is dead or has no replicas
 func ReadKubeRC(name, external_port string) (int, string, error) {
-	get_replicacontrolers := exec.Command("kubectl", "get", "rc", name, "--output=json")
+	get_replicacontrolers := exec.Command("kubectl", "--verbosity=debug", "--quiet","get", "rc", name, "--output=json")
 	var stdout, stderr bytes.Buffer
 	get_replicacontrolers.Stdout = &stdout
 	get_replicacontrolers.Stderr = &stderr
