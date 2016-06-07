@@ -76,7 +76,7 @@ func (c *Config) initGcloud() error {
 	auth_cmd.Stderr = &stderr
 	err = auth_cmd.Run()
 	if err != nil {
-		return fmt.Errorf("gcloud auth failed with error: %s\n", stderr.String())
+		return fmt.Errorf("gcloud auth failed with error: %s and stdout of %s\n", stderr.String(), stdout.String())
 	}
 	
 	// verify that datacloud functions are installed
@@ -105,7 +105,7 @@ func (c *Config) initKubectl(container, zone string) error {
 	set_proj_cmd.Stderr = &stderr
 	err = set_proj_cmd.Run()
 	if err != nil {
-		return fmt.Errorf("Gcloud project set failed: %s\n", stderr.String())
+		return fmt.Errorf("Gcloud project set failed with error: %s and stdout of: %s\n", stderr.String(), stdout.String())
 	}
 	
 
@@ -123,7 +123,7 @@ func (c *Config) initKubectl(container, zone string) error {
 	kubectl_check_cmd.Stderr = &stderr
 	err = kubectl_check_cmd.Run()
 	if err != nil {
-		return fmt.Errorf("Kubectl config view command failed: %q\n", stderr.String())
+		return fmt.Errorf("Kubectl config view command failed with error: %s and stdout of: %s\n", stderr.String(), stderr.String() )
 	}
 	
 	return nil
