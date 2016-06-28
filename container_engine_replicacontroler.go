@@ -50,7 +50,7 @@ func CreateKubeRC(name, dockerImage, external_port string, optional_args, env_ar
 	run_replicacontroler.Stderr = &stderr
 	err := run_replicacontroler.Run()
 	if err != nil {
-		return "", fmt.Errorf("Error creating replicacontroler named %q with error %q", name, stderr.String())
+		return "", fmt.Errorf("Error creating replicacontroler named %q with error %q and stdout: %q", name, stderr.String(), stdout.String())
 	}
 
 	var runReturn kubectlItem
@@ -75,7 +75,7 @@ func expose_rc_externally(name, external_port string) (error) {
 	expose_rc.Stderr = &stderr
 	err := expose_rc.Run()
 	if err != nil {
-		return fmt.Errorf("Error creating external load balancer on a specific port: %q", stderr.String())
+		return fmt.Errorf("Error creating external load balancer on a specific port: %q, with stdout: %q", stderr.String(), stdout.String())
 	}
 
 	// wait at most 10 minutes for external ip to be set
@@ -103,7 +103,7 @@ func ReadKubeRC(name, external_port string) (int, string, error) {
 	get_replicacontrolers.Stderr = &stderr
 	err := get_replicacontrolers.Run()
 	if err != nil {
-		return -1, "", fmt.Errorf("Error listing replica controlers: %q", stderr.String())
+		return -1, "", fmt.Errorf("Error listing replica controlers: %q with stdout: %q", stderr.String(), stdout.String())
 	}
 
 	var getReturn kubectlItem
@@ -127,7 +127,7 @@ func fetchExternalIp(name string) (string, error) {
 	get_services.Stderr = &stderr
 	err := get_services.Run()
 	if err != nil {
-		return "", fmt.Errorf("Error fetching services information for this cluster: %q", stderr.String())
+		return "", fmt.Errorf("Error fetching services information for this cluster: %q and stdout: %q", stderr.String(), stdout.String())
 	}
 
 	var getReturn kubectlService
@@ -157,7 +157,7 @@ func DeleteKubeRC(name, external_port string) (error) {
 	delete_replicacontrolers.Stderr = &stderr
 	err := delete_replicacontrolers.Run()
 	if err != nil {
-		return  fmt.Errorf("Error deleting replica controler: %q", stderr.String())
+		return  fmt.Errorf("Error deleting replica controler: %q and stdout: %q", stderr.String(), stdout.String())
 	}
 	
 	return nil
@@ -170,7 +170,7 @@ func deleteLoadBalanacerService(name string) (error) {
 	delete_loadbalancer_service.Stderr = &stderr
 	err := delete_loadbalancer_service.Run()
 	if err != nil {
-		return  fmt.Errorf("Error deleting service: %q", stderr.String())
+		return  fmt.Errorf("Error deleting service: %q with stdout: %q", stderr.String(), stdout.String())
 	}
 	
 	return nil

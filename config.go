@@ -114,7 +114,7 @@ func (c *Config) initKubectl(container, zone string) error {
 	cred_gen_cmd.Stderr = &stderr
 	err = cred_gen_cmd.Run()
 	if err != nil {
-		return fmt.Errorf("Gcloud container credential fetch failed: %s\n", stderr.String())
+		return fmt.Errorf("Gcloud container credential fetch failed: %s with stdout of %s\n", stderr.String(), stdout.String())
 	}
 
 	

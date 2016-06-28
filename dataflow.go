@@ -30,7 +30,7 @@ func CreateDataflow(name, classpath, class, project string, optional_args map[st
 	create_dataflow_cmd.Stderr = &stderr
 	err := create_dataflow_cmd.Run()
 	if err != nil {
-		return findJobIds(stderr.String()), fmt.Errorf("Error submitting dataflow job: %q", stderr.String())
+		return findJobIds(stderr.String()), fmt.Errorf("Error submitting dataflow job: %q and stdout of: %q", stderr.String(), stdout.String())
 	}
 
 	return findJobIds(stdout.String()), nil
@@ -59,7 +59,7 @@ func ReadDataflow(jobkey string, project string) (*DataflowDescription, error) {
 	job_check_cmd.Stderr = &stderr
 	err := job_check_cmd.Run()
 	if err != nil {
-		return nil, fmt.Errorf("Error reading job %q with error %q", jobkey, stderr.String())
+		return nil, fmt.Errorf("Error reading job %q with error %q and stdout %q", jobkey, stderr.String(), stdout.String())
 	}
 
 	jobDesc := &DataflowDescription{}
@@ -80,7 +80,7 @@ func CancelDataflow(jobid, jobstate string, project string) (bool, error) {
 		job_cancel_cmd.Stderr = &stderr
 		err := job_cancel_cmd.Run()
 		if err != nil {
-			return false, err
+			return false, fmt.Errorf("Error canceling job with error: %q and stderr: %q and stdout: %q", err, stderr.String(), stdout.String())
 		}
 
 		if strings.Contains(stdout.String(), "Failed") {
