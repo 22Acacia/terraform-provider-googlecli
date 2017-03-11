@@ -22,3 +22,10 @@ _testmain.go
 *.exe
 *.test
 *.prof
+
+# we build dependencies from the godeps.json and not ship all this stuff in repo
+vendor/*
+
+# pycharm specific ignores
+.idea
+*.iml
