@@ -78,10 +78,10 @@ func (c *Config) initGcloud() error {
 	if err != nil {
 		return fmt.Errorf("gcloud auth failed with error: %s and stdout of %s\n", stderr.String(), stdout.String())
 	}
-	
+
 	// verify that datacloud functions are installed
 	//  this will need to be updated when they come out of alpha
-	datacloud_cmd := exec.Command("gcloud", "alpha", "dataflow" , "-h")
+	datacloud_cmd := exec.Command("gcloud", "dataflow" , "-h")
 	err = datacloud_cmd.Run()
 	if err != nil {
 		return fmt.Errorf("gcloud dataflow commands not installed.\n")
