@@ -10,15 +10,15 @@ dependencies:
 
 test:
   override:
-    - echo ""
+    - echo "tech debt"
 
 
 deployment:
   demo:
     branch: master
     commands:
-      - go build -v -o $HOME/$CIRCLE_PROJECT_REPONAME/$CIRCLE_PROJECT_REPONAME
+      - pwd && go build -v -o $HOME/$CIRCLE_PROJECT_REPONAME/$CIRCLE_PROJECT_REPONAME
       - cd $HOME/$CIRCLE_PROJECT_REPONAME && echo $GOOGLE_CREDENTIALS > account.json
       - /opt/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file $HOME/$CIRCLE_PROJECT_REPONAME/account.json
-      - gsutil cp $HOME/$CIRCLE_PROJECT_REPONAME/terraform-provider-googleappengine gs://$GSTORAGE_DEST_BUCKET/terraform-provider-googleappengine
-      - gsutil acl ch -u AllUsers:R gs://$GSTORAGE_DEST_BUCKET/terraform-provider-googlecli
+      - gsutil cp $HOME/$CIRCLE_PROJECT_REPONAME/$CIRCLE_PROJECT_REPONAME gs://$GSTORAGE_DEST_BUCKET/$CIRCLE_PROJECT_REPONAME
+      - gsutil acl ch -u AllUsers:R gs://$GSTORAGE_DEST_BUCKET/$CIRCLE_PROJECT_REPONAME
