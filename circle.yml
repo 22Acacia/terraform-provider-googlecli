@@ -1,15 +1,29 @@
+machine:
+  environment:
+    # GOROOT is not set by default
+    GOROOT: ""
+    PATH: "/usr/local/go/bin:/usr/local/go_workspace/bin:~/.go_workspace/bin:${PATH}"
+    GOPATH: "${HOME}/.go_workspace:/usr/local/go_workspace:${HOME}/.go_project"
+
+dependencies:
+  override:
+    - go get -u github.com/golang/dep/...
+    branch: master
+    commands:
+      - go get github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
+      - cd ${HOME}/.go_project/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
+      - dep ensure
+      - go build -v -o $HOME/$CIRCLE_PROJECT_REPONAME/$CIRCLE_PROJECT_REPONAME
 test:
   override:
-    - make test
+    # './...' is a relative pattern which means all subdirectories
+    - echo ""
+
 
 deployment:
   demo:
     branch: master
     commands:
-      - mkdir -p $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME/
-      - mv $HOME/$CIRCLE_PROJECT_REPONAME/ $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME/
-      - cd $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/ && make build
-      - cd $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/ && echo $GOOGLE_CREDENTIALS > account.json
-      - /opt/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/account.json
-      - gsutil cp $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/terraform-provider-googlecli gs://$GSTORAGE_DEST_BUCKET/terraform-provider-googlecli
-      - gsutil acl ch -u AllUsers:R gs://$GSTORAGE_DEST_BUCKET/terraform-provider-googlecli
+      - cd $HOME/$CIRCLE_PROJECT_REPONAME && echo $GOOGLE_CREDENTIALS > account.json
+      - /opt/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file $HOME/$CIRCLE_PROJECT_REPONAME/account.json
+      - gsutil cp $HOME/$CIRCLE_PROJECT_REPONAME/terraform-provider-googleappengine gs://$GSTORAGE_DEST_BUCKET/terraform-provider-googleappengine
