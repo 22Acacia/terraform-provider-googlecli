@@ -16,7 +16,7 @@ dependencies:
       - go build -v -o $HOME/$CIRCLE_PROJECT_REPONAME/$CIRCLE_PROJECT_REPONAME
 test:
   override:
-    # './...' is a relative pattern which means all subdirectories
+    # './...' is a relative pat tern which means all subdirectories
     - echo ""
 
 
