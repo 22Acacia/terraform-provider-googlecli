@@ -1,15 +1,24 @@
+machine:
+  environment:
+    GOROOT: ""
+    PATH: "/usr/local/go/bin:/usr/local/go_workspace/bin:~/.go_workspace/bin:${PATH}"
+    GOPATH: "${HOME}/.go_workspace:/usr/local/go_workspace:${HOME}/.go_project"
+
+dependencies:
+  override:
+    - ./go_setup.sh
+
 test:
   override:
-    - make test
+    - echo "tech debt"
+
 
 deployment:
   demo:
     branch: master
     commands:
-      - mkdir -p $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME/
-      - mv $HOME/$CIRCLE_PROJECT_REPONAME/ $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME/
-      - cd $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/ && make build
-      - cd $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/ && echo $GOOGLE_CREDENTIALS > account.json
-      - /opt/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/account.json
-      - gsutil cp $HOME/.go_workspace/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/terraform-provider-googlecli gs://$GSTORAGE_DEST_BUCKET/terraform-provider-googlecli
-      - gsutil acl ch -u AllUsers:R gs://$GSTORAGE_DEST_BUCKET/terraform-provider-googlecli
+      - cd ${HOME}/.go_workspace/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME} && go build -v -o $HOME/$CIRCLE_PROJECT_REPONAME/$CIRCLE_PROJECT_REPONAME
+      - cd $HOME/$CIRCLE_PROJECT_REPONAME && echo $GOOGLE_CREDENTIALS > account.json
+      - /opt/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file $HOME/$CIRCLE_PROJECT_REPONAME/account.json
+      - gsutil cp $HOME/$CIRCLE_PROJECT_REPONAME/$CIRCLE_PROJECT_REPONAME gs://$GSTORAGE_DEST_BUCKET/$CIRCLE_PROJECT_REPONAME
+      - gsutil acl ch -u AllUsers:R gs://$GSTORAGE_DEST_BUCKET/$CIRCLE_PROJECT_REPONAME

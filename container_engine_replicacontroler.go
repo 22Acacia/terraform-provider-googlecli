@@ -69,7 +69,7 @@ func CreateKubeRC(name, dockerImage, external_port string, optional_args, env_ar
 }
 
 func expose_rc_externally(name, external_port string) (error) {
-	expose_rc := exec.Command("kubectl", "expose", "rc", name, "--port=" + external_port, "--type=LoadBalancer", "--output=json")
+	expose_rc := exec.Command("kubectl", "expose", "deployments", name, "--port=" + external_port, "--type=LoadBalancer", "--output=json")
 	var stdout, stderr bytes.Buffer
 	expose_rc.Stdout = &stdout
 	expose_rc.Stderr = &stderr
@@ -86,7 +86,7 @@ func expose_rc_externally(name, external_port string) (error) {
 		if err != nil {
 			return err
 		}
-		
+
 		if exip != "" {
 			exip_set = true
 		}
@@ -97,7 +97,7 @@ func expose_rc_externally(name, external_port string) (error) {
 
 //  calling function needs to handle if the read is successful but the rc is dead or has no replicas
 func ReadKubeRC(name, external_port string) (int, string, error) {
-	get_replicacontrolers := exec.Command("kubectl", "get", "rc", name, "--output=json")
+	get_replicacontrolers := exec.Command("kubectl", "get", "deployments", name, "--output=json")
 	var stdout, stderr bytes.Buffer
 	get_replicacontrolers.Stdout = &stdout
 	get_replicacontrolers.Stderr = &stderr
@@ -151,7 +151,7 @@ func DeleteKubeRC(name, external_port string) (error) {
 			return err
 		}
 	}
-	delete_replicacontrolers := exec.Command("kubectl", "delete", "rc", name)
+	delete_replicacontrolers := exec.Command("kubectl", "delete", "deployments", name)
 	var stdout, stderr bytes.Buffer
 	delete_replicacontrolers.Stdout = &stdout
 	delete_replicacontrolers.Stderr = &stderr

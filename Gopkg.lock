@@ -1,0 +1,155 @@
+memo = "cdf8a02f99c039452147dde679bd12919be63a25f5a4a52d95bdd6b34b954635"
+
+[[projects]]
+  name = "cloud.google.com/go"
+  packages = ["compute/metadata","internal"]
+  revision = "620e968dec62c9aac95a23e38e32e2cb831f73e3"
+
+[[projects]]
+  name = "github.com/apparentlymart/go-cidr"
+  packages = ["cidr"]
+  revision = "a3ebdb999b831ecb6ab8a226e31b07b2b9061c47"
+
+[[projects]]
+  name = "github.com/aws/aws-sdk-go"
+  packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","private/protocol","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/restxml","private/protocol/xml/xmlutil","private/waiter","service/s3","service/sts"]
+  revision = "963d664c4279debae251c0f336e247571dc614db"
+
+[[projects]]
+  name = "github.com/bgentry/go-netrc"
+  packages = ["netrc"]
+  revision = "9fd32a8b3d3d3f9d43c341bfe098430e07609480"
+
+[[projects]]
+  name = "github.com/davecgh/go-spew"
+  packages = ["spew"]
+  revision = "346938d642f2ec3594ed81d874461961cd0faa76"
+  version = "v1.1.0"
+
+[[projects]]
+  name = "github.com/go-ini/ini"
+  packages = ["."]
+  revision = "7e015cd18f007383aa571cc413bd2ec09cff7f2d"
+  version = "v1.25.3"
+
+[[projects]]
+  name = "github.com/golang/protobuf"
+  packages = ["proto"]
+  revision = "c9c7427a2a70d2eb3bafa0ab2dc163e45f143317"
+
+[[projects]]
+  name = "github.com/googleapis/gax-go"
+  packages = ["."]
+  revision = "8c5154c0fe5bf18cf649634d4c6df50897a32751"
+
+[[projects]]
+  name = "github.com/hashicorp/errwrap"
+  packages = ["."]
+  revision = "7554cd9344cec97297fa6649b055a8c98c2a1e55"
+
+[[projects]]
+  name = "github.com/hashicorp/go-getter"
+  packages = [".","helper/url"]
+  revision = "c3d66e76678dce180a7b452653472f949aedfbcd"
+
+[[projects]]
+  name = "github.com/hashicorp/go-multierror"
+  packages = ["."]
+  revision = "ed905158d87462226a13fe39ddf685ea65f1c11f"
+
+[[projects]]
+  name = "github.com/hashicorp/go-plugin"
+  packages = ["."]
+  revision = "f72692aebca2008343a9deb06ddb4b17f7051c15"
+
+[[projects]]
+  name = "github.com/hashicorp/go-uuid"
+  packages = ["."]
+  revision = "64130c7a86d732268a38cb04cfbaf0cc987fda98"
+
+[[projects]]
+  name = "github.com/hashicorp/go-version"
+  packages = ["."]
+  revision = "03c5bf6be031b6dd45afec16b1cf94fc8938bc77"
+
+[[projects]]
+  name = "github.com/hashicorp/hcl"
+  packages = [".","hcl/ast","hcl/parser","hcl/scanner","hcl/strconv","hcl/token","json/parser","json/scanner","json/token"]
+  revision = "630949a3c5fa3c613328e1b8256052cbc2327c9b"
+
+[[projects]]
+  name = "github.com/hashicorp/hil"
+  packages = [".","ast","parser","scanner"]
+  revision = "5b8d13c8c5c2753e109fab25392a1dbfa2db93d2"
+
+[[projects]]
+  name = "github.com/hashicorp/logutils"
+  packages = ["."]
+  revision = "0dc08b1671f34c4250ce212759ebd880f743d883"
+
+[[projects]]
+  name = "github.com/hashicorp/terraform"
+  packages = ["builtin/providers/google","config","config/module","dag","flatmap","helper/config","helper/experiment","helper/hashcode","helper/hilmapstructure","helper/logging","helper/pathorcontents","helper/resource","helper/schema","helper/shadow","plugin","terraform"]
+  revision = "403a86dc557fae52f8e39676b11e1e4356b7d1a2"
+  version = "v0.8.8"
+
+[[projects]]
+  name = "github.com/hashicorp/yamux"
+  packages = ["."]
+  revision = "d1caa6c97c9fc1cc9e83bbe34d0603f9ff0ce8bd"
+
+[[projects]]
+  name = "github.com/jmespath/go-jmespath"
+  packages = ["."]
+  revision = "bd40a432e4c76585ef6b72d3fd96fb9b6dc7b68d"
+
+[[projects]]
+  name = "github.com/mitchellh/copystructure"
+  packages = ["."]
+  revision = "f81071c9d77b7931f78c90b416a074ecdc50e959"
+
+[[projects]]
+  name = "github.com/mitchellh/go-homedir"
+  packages = ["."]
+  revision = "b8bc1bf767474819792c23f32d8286a45736f1c6"
+
+[[projects]]
+  name = "github.com/mitchellh/mapstructure"
+  packages = ["."]
+  revision = "53818660ed4955e899c0bcafa97299a388bd7c8e"
+
+[[projects]]
+  name = "github.com/mitchellh/reflectwalk"
+  packages = ["."]
+  revision = "417edcfd99a4d472c262e58f22b4bfe97580f03e"
+
+[[projects]]
+  name = "github.com/satori/go.uuid"
+  packages = ["."]
+  revision = "b061729afc07e77a8aa4fad0a2fd840958f1942a"
+
+[[projects]]
+  name = "golang.org/x/net"
+  packages = ["context","context/ctxhttp","http2","http2/hpack","idna","internal/timeseries","lex/httplex","trace"]
+  revision = "a6577fac2d73be281a500b310739095313165611"
+
+[[projects]]
+  name = "golang.org/x/oauth2"
+  packages = [".","google","internal","jws","jwt"]
+  revision = "efb10a30610e617dbb17fc243f4cc61a8cfa2903"
+
+[[projects]]
+  name = "google.golang.org/api"
+  packages = ["cloudbilling/v1","cloudresourcemanager/v1","compute/v1","container/v1","dns/v1","gensupport","googleapi","googleapi/internal/uritemplates","iam/v1","pubsub/v1","servicemanagement/v1","sqladmin/v1beta4","storage/v1"]
+  revision = "1202890e803f07684581b575fda809bf335a533f"
+
+[[projects]]
+  branch = "master"
+  name = "google.golang.org/appengine"
+  packages = [".","internal","internal/app_identity","internal/base","internal/datastore","internal/log","internal/modules","internal/remote_api","internal/urlfetch","urlfetch"]
+  revision = "170382fa85b10b94728989dfcf6cc818b335c952"
+
+[[projects]]
+  name = "google.golang.org/grpc"
+  packages = [".","codes","credentials","grpclog","internal","keepalive","metadata","naming","peer","stats","tap","transport"]
+  revision = "d50cf2db166eaff3f2429425758d12205085eb5b"

@@ -1,0 +1,4 @@
+
+[[dependencies]]
+  name = "github.com/hashicorp/terraform"
+  version = "0.8.8"
